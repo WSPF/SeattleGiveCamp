@@ -1,0 +1,1331 @@
+﻿<!doctype html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <title>Washington State Park Foundation</title>
+  <link href="WSPF_Google_Map.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+  <script type="text/javascript" src="markerclustererplus.js"></script>
+  <script type="text/javascript" src="oms_beta.js"></script>
+  <script type="text/javascript" src="markermanagerV3.js"></script>
+  <script type="text/javascript" src="StyledMarkerNew.js"></script>
+  <script type="text/javascript" src="infobox.js"></script>
+  <script type="text/javascript" src="WSPF_Google_Map_Trails_KML.js"></script>
+  <script type="text/javascript" src="https://geoxml3.googlecode.com/svn/branches/polys/geoxml3.js"></script>
+  <script type="text/javascript" src="https://geoxml3.googlecode.com/svn/trunk/ProjectedOverlay.js"></script>
+  <!--<script type="text/javascript" src="http://jnelsonphotography.com/Map_Files/GoogleMap_Master_Fusion_Table.js"></script>-->
+  <script type="text/javascript" src="WSPF_Google_Map.js"></script>
+  <script type="text/javascript">
+
+google.load('visualization', '1', {'packages':['table']});
+google.maps.visualRefresh = true;
+
+	var park_tour_map = query_park; 
+
+	/*for park-specific map tour map, replace '' in variable statement with any of these options: 
+		ftcolumbia
+		seaquest
+		caped_mckenzie,caped_northhead,caped_caped
+		ftflagler
+		saltwater
+		deceptionpass,deceptionpass_rosario,deceptionpass_bowman,deceptionpass_northhead,deceptionpass_cornet,deceptionpass_gooserock,
+		stedward,stedward_trails
+		southwhidbey,possessionpt
+		olallie,olallie_twinfall,olallie_cedarbutte,olallie_park
+		hopeislandskagit
+		
+		*/
+
+	var assetsrc = "http://wspf.org/maps/"
+	var iconsrc = "http://wspf.org/maps/WSPF_Google_Map_Icon_Files/"
+	var kmlsrc = "http://wspf.org/maps/WSPF_Google_Map_KML_Files/"
+
+	var toursrc= "http://wspf.org/virtual-tours/"
+
+ 	 /*assetsrc is url of hosting server or local source
+		file folder naming convention within 'assetsrc' location: 
+		 Image_Files - contains still images, minimum 1000px width
+		 Panorama_Files - contains thumbnails of panoramic images and self-hosted 360 views
+		 Media_Files - contains slideshows or videos such as .swf, .mpeg, .qtm, .html, etc.
+		 Icon_Files - contains custom icons for map markers
+		 Map_Files - contains support .js and .css files; also contains Google Earth KML files for paths/trails (Map_Files/KML_Files/)*/
+	 
+  	var map;
+  	var mgr = null;
+  	var markers = [];
+  	var markersArray=[];
+  	var markerCluster = null;
+	var geoXml = null;
+	var geoXmlDoc = null;
+	var myGeoXml3Zoom = true;
+	var kmlLayer = null;
+
+	var filename = kmlsrc+"/stedward_south_canyon_trail.kml";
+
+	//set default width of map and asset display when marker is clicked
+	var displaywidth = "1000px";var displayheight = "800px";
+
+	var bounds = new google.maps.LatLngBounds();
+
+	var infobox = new InfoBox(
+	  	{
+		alignBottom: true,		
+	    disableAutoPan: false,
+	    maxWidth: 150,
+	    pixelOffset: new google.maps.Size(-250, -25),
+	    zIndex: null,
+	    boxStyle: 
+			{
+                background: "url('infobox.png') no-repeat",
+                opacity: 1,
+                width: "300px",
+				height: "150px"
+		     },
+	    closeBoxMargin: "12px 4px 2px 2px",
+	    closeBoxURL: "https://www.google.com/intl/en_us/mapfiles/close.gif",
+	    infoBoxClearance: new google.maps.Size(1, 1)
+		});
+	  
+	var infoWindow = new google.maps.InfoWindow();
+   
+  	var mcOptions = 		{
+			gridSize:100,
+			maxZoom: 18,
+			minimumClusterSize: 10,
+			styles:[
+				{height:56,url:iconsrc+"m1x.png",width:56},
+				{height:56,url:iconsrc+"m2x.png",width:56},
+				{height:56,url:iconsrc+"m3x.png",width:56},
+				{height:56,url:iconsrc+"m4x.png",width:56},
+				{height:56,url:iconsrc+"m5x.png",width:56}]
+				};
+
+			
+//Fusion Table ID//
+  var tableID = '1IYyOzPykFRvEKyBsdbUS3y9-gNwoYEOm0LRbgBo';
+  
+//Define trail path polyline//
+  	var lineSymbol = {path: 'M 0,-1 0,1',strokeOpacity: 1,scale: 4,strokeColor:'#FBEC5D'};
+	var lineIcon = {icon: lineSymbol,offset: '0',repeat: '20px'};
+	var lineSymbol2 = {path: 'M 0,-1 0,1',strokeOpacity: 1,scale: 4,strokeColor:'#00FFFF'};
+	var lineIcon2 = {icon: lineSymbol2,offset: '0',repeat: '20px'};
+	
+
+
+// Fort Flagler Retreat Center Outlines//
+//	var Flagler_Retreat_Hoskins= new google.maps.Polyline({path: Flagler_Retreat_Hoskins_pts, strokeOpacity:0,icons:[lineIcon2],strokeWeight: 1});
+//	var Flagler_Retreat_Wilson= new google.maps.Polyline({path: Flagler_Retreat_Wilson_pts, strokeOpacity:0,icons:[lineIcon2],strokeWeight: 1});
+//	var Flagler_Retreat_Richmond= new google.maps.Polyline({path: Flagler_Retreat_Richmond_pts, strokeOpacity:0,icons:[lineIcon2],strokeWeight: 1});
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	function clearOverlays() 
+		{
+  		for (var i = 0; i < markersArray.length; i++ ) {
+    		markersArray[i].setMap(null);
+  		}
+  		markersArray = [];
+		}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  	function initialize() 
+  	{
+    	var center = new google.maps.LatLng(47.189494,-120.881778);
+
+    	map = new google.maps.Map(document.getElementById('map_canvas'), 
+		{
+      	center: center,
+		zoom: 7,
+      	mapTypeId: google.maps.MapTypeId.HYBRID,
+		disableDefaultUI: false
+    	});
+		document.getElementById("side_bar").innerHTML = "null";
+		document.getElementById("intro").style.display="block";
+		document.getElementById("batteries").style.display="none";
+		document.getElementById("retreat").style.display="none";
+		document.getElementById("vacation").style.display="none";
+		document.getElementById("trails").style.display="none";
+		document.getElementById("map_canvas").style.width="100%";
+		document.getElementById("side_bar").style.display="none";
+
+		clearOverlays();
+		
+				}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	function query4markers(query) 
+  	{
+    for (var i=markers.length-1; i>=0; i--) 
+    	{
+       		markers[i].setMap(null);
+       		markers.pop();
+    	}
+    
+	var sql = encodeURIComponent(query);
+    var query = new google.visualization.Query('https://www.google.com/fusiontables/gvizdata?tq=' + sql);
+    
+	query.send(getData);
+  	}
+  	
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+
+
+  function getData(response) 
+  {
+    var dt = response.getDataTable();  
+    var oms = new OverlappingMarkerSpiderfier(map,{keepSpiderfied:true,markersWontMove: true, markersWontHide: true});
+
+    var side_html = '<table style="border-collapse: collapse" border="1" width="200px" \
+                       cellpadding="5"> \
+                       <thead> \
+                         <tr style="background-color:#6CA6CD"> \
+                           <th> \
+						   <div id="sidebarselect" style="display:block">Select Location</div> \
+						   </th> \
+                         </tr> \
+                       </thead> \
+                       <tbody>';
+
+    for (var i = 0; i < dt.getNumberOfRows(); i++) 
+	{
+	  var index = dt.getValue(i,0); 	   //1 Index       
+      var park = dt.getValue(i,1);         //2 Park_Name
+      var lat = dt.getValue(i,2);          //3 Latitude
+      var lng = dt.getValue(i,3);          //4 Longitude
+	  var title = dt.getValue(i,4);       //5 Title
+      var description = dt.getValue(i,5);  //6 Description
+      var thumb = dt.getValue(i,6);        //7 Thumbnail
+      var preview = dt.getValue(i,7);      //8 File_Preview
+      var icon = dt.getValue(i,8);         //9 Icon
+	  var iconcat = dt.getValue(i,9);      //10 Asset_Type
+      var tour = dt.getValue(i,11);         //12 Tour_Asset
+      var Keywords = dt.getValue(i,12);         //13 Keywords
+      var filetype = dt.getValue(i,10);    //11 File_Type
+	  var panoramioID= dt.getValue(i,13);    //15 Panoramio ID 
+	  var name360 = dt.getValue(i,14);    //14 360 Cities panorama embed name
+	  var zoom = dt.getValue(i,15); 		//16 Zoom
+	  var WSPFthumb = dt.getValue(i,16);
+	  var WSPFText1 = dt.getValue(i,17);
+	  var WSPFText2 = dt.getValue(i,18);
+	  var ParkURL = dt.getValue(i,19);
+	  var ParkMapUrl = dt.getValue(i,20);
+	  var KML = dt.getValue(i,21);
+	  var namepsphere = dt.getValue(i,22);
+      var pt = new google.maps.LatLng(lat,lng);
+	  var filelink = index+filetype;
+	  var tourlink = preview+filetype;
+	
+	      
+	  var info =  '<table width="200px" border="1">\
+			<tr>\
+    		<td style="	background: #6CA6CD; color:white; font-size:100%;font-family: sans-serif;">'+title+'<br/>\
+			<span style="font-size:75%">-   '+park+'</span></td>\
+    		</tr>\
+    		<tr><td>\
+			<img src="'+thumb+'" style="width:190px;height:140px"/>\
+			</td></tr>\
+    		<tr><td style="font-family: sans-serif; font-size:12px;">'+description+'</td></tr>\
+			</table><br>\
+			<table id="resetmap"><tr><td><input type="button" onclick="initialize();choose_map();" value="Reset Map" style="display:block"></td></tr></table>'
+
+	  var panthumb =  '<table width="325px">\
+    		<tr><td><img src="'+assetsrc+'/Panorama_Files/'+index+'_thumb.jpg" style="width:305px;height:155px"/></td></tr>\
+    		<tr><td style="font-family: sans-serif; font-size:12px; font:white;"><a>Click here for interactive view.</a></td></tr>\
+			</table>'
+
+	  var iconimage = assetsrc+"Image_Files/"+index+"_icon.jpg"
+	  
+	//for linking to tour html page
+	  var html_infobox = '<div class="infowindowB">\
+		  <div class="innerwindowB">\
+		  <div id="innerwindow2B">\
+		  '+description+'<br><!--<a href="../'+tourlink+'" target="_parent">Tour '+description+'</a>-->\
+		  </div></div></div>';
+
+	//for calling a map zoom function
+	  var html_infobox2 = '<div class="infowindowB">\
+		  <div class="innerwindowB">\
+		  <div id="innerwindow2B">\
+		  '+description+'<br><a href="#" onClick='+index+'();>Tour '+description+'</a>\
+		  </div></div></div>';
+
+	  var html_infobox3 = '<div class="infowindowB">\
+		  <div class="innerwindowB">\
+		  <div id="innerwindow2B">\
+		  '+title+'<br>'+description+'<br>(Click icon to show trail)<!--<a href="../'+tourlink+'" target="_parent">Tour '+description+'</a>-->\
+		  </div></div></div>';
+
+	  var html_topsidebar = '<table width="200px" border="1">\
+			<tr>\
+    		<td style="	background: #6CA6CD; color:white; font-size:100%;font-family: sans-serif;">'+description+'</td>\
+    		</tr>\
+    		<tr><td>\
+			<img src="'+assetsrc+'/Image_Files/'+index+'.jpg" style="width:190px;height:140px"/>\
+			</td></tr>\
+    		<tr><td style="font-family: sans-serif; font-size:12px;"><a href="'+preview+'" target="_parent">Tour '+description+'</a></td></tr>\
+			</table>'
+	  
+	  
+	  html_headerbar = '<table width="700px" border="1">\
+			<tr align="left">\
+    		<td  colspan="2" style="background: #6CA6CD; color:white; font-size:100%;font-family: sans-serif;">'+description+'</td>\
+    		</tr>\
+    		<tr ><td>\
+			<img src="'+thumb+'" style="width:190px;height:140px"/>\
+			</td>\
+			<td>'+WSPFText1+'<br/>'+WSPFText2+'<br/>\
+			<input type="button" value="Official Park Map" onclick="showmap()"></td>\
+			</td></tr>\
+    		<tr><td colspan="2" style="font-family: sans-serif; font-size:12px;"><!--<a href="'+preview+'" target="_parent">Tour '+description+'</a>--></td></tr>\
+			</table>'
+
+	  side_html += '<tr> \
+             <td align="left">\
+				 <img width="25px" src="'+iconsrc+icon+'.png">\
+				 	<a href="javascript:myclick(' + i + ')" title="'+park+'">' + title + '</a>\
+			</td> \
+             </tr>';
+
+//define what table colums will be tied to a marker//
+    createMarker(park,pt,info,icon,title,index,filetype,html_infobox,html_infobox2,html_infobox3,html_topsidebar,description,zoom,html_headerbar,panoramioID,name360,panthumb
+	,WSPFthumb,WSPFText1,WSPFText2,ParkURL,ParkMapUrl,preview,KML,thumb,Keywords,namepsphere);  
+
+/////////////////////////////////////////////////////////////////////////////////////////////			
+//create marker and assign table values to that marker
+					
+	function createMarker(park,point,info,icon,title,index,filetype,label,label2,label3,button,description,zoom,headerbox,panoramioID,name360,panthumb,wspfthumb,text1,text2,parkurl,parkmapurl,preview,KML,thumb,keywords,namepsphere) 
+	{
+
+		var KML= KML;
+		var keywords=keywords;
+		var image = {
+	    url: iconimage,
+	    size: new google.maps.Size(35, 25),
+	    origin: new google.maps.Point(0,0),
+	    anchor: new google.maps.Point(0, 32)
+		  };		
+  
+  
+		var stdopts =
+		   {position: point,
+	      	map: map,
+		 	icon: iconsrc+icon+'.png',
+			title: title,
+			label: title,
+		   };
+
+		if (
+				icon=="icon_canoe" || 
+				icon=="icon_boatlaunch" ||
+				icon=="icon_shelter"||
+				icon=="tour_icon"||
+				//icon=="pan_icon"||
+				//icon=="360_icon"||
+				icon=="psphere_icon"||
+				icon=="icon_photosphere"||
+				icon=="icon_panoramio"||
+				icon=="slide_icon"||
+				icon=="icon_lodging"||
+				icon=="camicon"||
+//				icon=="icon_picasa"||
+				icon=="panoramio_icon"||
+				icon=="icon_camping_pic"				
+				)
+		  var myMarkerOpts = stdopts;
+				
+		else if (icon=="park_icon"||icon=="tree_icon")
+   		 var myMarkerOpts = 
+		 {
+	     	position: point,
+	      	map: map,
+		 	icon: iconsrc+icon+'.png',
+		  	//title: park,
+			//label: title
+	   	};
+//		else if (icon== "icon_picasa")
+//		 var myMarkerOpts =
+//		 {
+//			 position:point,
+//			 map: map,
+//			 icon: assetsrc+'Map_Files/WSPF/WSPF_Google_Map_Icon_Files/icon_picasa.png',
+//			 title: park,
+//			 label: title
+//		 };
+		
+		else if (icon== '')
+   		 var myMarkerOpts = 
+		 {
+	     	position: point,
+	      	map: map,
+		 	icon: iconsrc+'icon_dot_blue.png',
+		  	//title: park,
+			//label: title
+	   	};
+
+		else if (icon=='pan_icon')
+   		 var myMarkerOpts = 
+		 {
+	     	position: point,
+	      	map: map,
+		 	icon: iconsrc+'icon_dot_blue.png',
+		  	//title: park,
+			//label: title
+	   	};
+	
+		else
+   		 var myMarkerOpts = stdopts;
+		
+		var icontest;	
+		//references file location of target asset
+			if 		(icon=="pan_icon")	{icontest = assetsrc+"/Panorama_Files/";}
+			else if (icon=="360_icon")  {icontest = "https://www.360cities.net/pro_embed_iframe/";}
+			else if (icon=="tour_icon") {icontest = preview;}
+			else if (icon=="icon_picasa") {icontest = preview;}
+			else if (icon=="icon_panoramio") {icontest = preview;}
+			else if (icon=="icon_hiking_kml") {icontest = kmlsrc+KML+".kml";}
+//			else if (icon=="icon_hiking_kml") {icontest = assetsrc+"/Map_Files/KML_Files/"+KML+".kml";}
+			else if (icon=="video_icon"||icon=="slide_icon")
+				{icontest = assetsrc+"/Media_Files/";}
+			else if (icon==="camicon"||icon=="icon_canoe"||icon==="icon_museum"||icon==="icon_parking")
+				{icontest = assetsrc+"images/";}
+			else {icontest=assetsrc+"/Panorama_Files/"};   	
+ 
+		var marker = new google.maps.Marker(myMarkerOpts);
+
+		  	
+	    markers.push(marker);
+   		oms.addMarker(marker);
+		markersArray.push(marker);
+	
+		// listen for marker mouseover //
+		google.maps.event.addListener(marker, 'mouseover',function()
+		{		
+		if	(icon=="park_icon")
+			{
+			marker.setIcon(iconsrc+"park_icon_alt.png");
+			infobox.close();
+			infobox.setContent(label);
+			infobox.open(map, this);
+			}
+			
+			else if (icon=="icon_hiking_kml")
+			{
+			marker.setIcon(iconsrc+"icon_hiking_kml_alt.png")
+			infobox.close();
+			infobox.setContent(label3);
+			infobox.open(map, this);					
+			}	
+		});
+	
+		
+		google.maps.event.addListener(marker, 'mouseout',function()
+		{
+			if	(icon=="park_icon")
+			{
+			marker.setIcon(iconsrc+"park_icon.png");
+			infobox.close();
+			}
+			
+			else if (icon=="icon_hiking_kml")
+			{
+			marker.setIcon(iconsrc+"icon_hiking_kml.png")
+			infobox.close();
+			}	
+		});
+
+		
+	//listen for marker click//
+		 
+	
+	    google.maps.event.addListener(marker, 'click', function() 
+		{
+			var ivp = icontest+index+".ivp"; 	
+			   var embedivp = "<object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' id='PurePlayer' \
+				width='650' height='450' \
+				codebase='http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab#version=9,0,0,0'>"+"<param name='movie' value='PurePlayer.swf' />"+"<param name='allowScriptAccess' value='sameDomain' />"+"<param name='allowFullScreen' value='true' />"+"<param name='flashvars' value='panorama="+ivp+"' />"+"<embed src='../../Panorama_Files/PurePlayer.swf' \
+				width='650' height='450' \
+				name='PurePlayer' align='middle' play='true' loop='false' quality='high' allowScriptAccess='sameDomain' allowFullScreen='true' type='application/x-shockwave-flash' flashvars='panorama="+ivp+"' pluginspage='http://www.adobe.com/go/getflashplayer'>"+"</embed>"+"</object><br>"+description;
+
+			var swf = icontest+index+".swf";
+			   var embedswf ="<object classid='clsid:d27cdb6e-ae6d-11cf-96b8-444553540000' codebase='http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0' \
+				width='650' height='500' \
+				id='test' align='middle'>"+"<param name='movie' value='"+swf+"'/>"+"<param name='quality' value='high' />"+"<param name='play' value='true' />"+"<param name='bgColor' value='#FFFFFF' />"+"<param name='wmode' value='transparent' />"+"<embed src='"+swf+"' \
+				width='650' height='500' \
+				quality='high' play='true' bgColor='#FFFFFF' wmode='transparent' type='application/x-shockwave-flash' pluginspage='http://www.macromedia.com/go/getflashplayer'/>"+"</object>";
+
+			var iframe = "<iframe id='iframe' src='' width='"+displaywidth+"' height='"+displayheight+"' scrolling='no' frameborder='1'></iframe>"
+
+			var jpg = icontest+index+".jpg"
+			   var embedjpg ="<img src='"+jpg+"' width='"+displaywidth+"'><br><span style='font-weight:bold; font-size:16px'>"+description+"</span>"			
+
+			var html = icontest+index+".html"
+			
+			var embed360cities = '<iframe src="'+icontest+name360+'"\
+		    	width="'+displaywidth+'" height="'+displayheight+'" frameborder="0" bgcolor="#000000" target="_blank"></iframe>'
+
+			var embedpsphere = '<iframe width="'+displaywidth+'" height="'+displayheight+'" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?layer=c&amp;panoid='+namepsphere+'&amp;ie=UTF8&amp;source=embed&amp;output=svembed&amp;cbp=13%2C94.17320000000007%2C%2C0%2C0"></iframe><!--<div><a href="https://www.google.com/maps/views/" style="color:#0000FF; text-align:left">Views</a>: <a href="https://www.google.com/maps/views/view/105570818336009834946/d0821d2709a2e6e2/BgErPMhlWu0AAAQIuAZDtg" style="color:#0000FF; text-align:left"><small>'+description+'</a> by <a href="https://www.google.com/maps/views/profile/105570818336009834946" style="color:#0000FF; text-align:left">Washington State Parks Foundation</a></small></div>-->'
+			var embedpsphere2 = '<iframe width="'+displaywidth+'" height="'+displayheight+'" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?layer=c&amp;panoid='+namepsphere+'&amp;ie=UTF8&amp;source=embed&amp;output=svembed&amp;cbp=13%2C94.17320000000007%2C%2C0%2C0"></iframe>'
+			var embedpsphere3 = '<div id="pano" style="width:"'+displaywidth+'";height:"'+displayheight+'"></div>'
+
+			var embedpicasa = '<img src='+icontest+'>'
+			var embedpanoramio = '<img src='+preview+'>'
+
+			var kmlpkg = icontest;
+			var keywords = keywords;
+
+//icon for trail paths with source KML file//
+			if	(icon=="icon_hiking_kml.png")
+			
+			{			
+   geoXml.hideDocument();
+   delete geoXml;
+					
+				function parseKML(){				
+				   var  filename = kmlpkg;
+		                infowindow = new google.maps.InfoWindow({});
+						geoXml = new geoXML3.parser({
+						map: map,
+				        infoWindow: infowindow,
+				        singleInfoWindow: true,
+						zoom: myGeoXml3Zoom,
+				        afterParse: useTheData
+				         });
+						 
+				        geoXml.parse(filename);
+			            }
+					infobox.close();
+//					initialize();
+//					choose_map();													
+					parseKML();	
+//					query4markers("select * from "+tableID+" where Title CONTAINS %'"+title+"'%{AND Tour_Asset='yes'} ORDER BY Icon");				
+					document.getElementById("side_bar2").innerHTML=info;
+					document.getElementById("side_bar2").style.display="none";
+					//document.getElementById("side_bar").style.display="none";
+					document.getElementById("side_bar").style.display="block";
+					document.getElementById("trails").style.display="block";
+
+					}
+
+
+//icon for trail paths generated within this file//
+			else if	(icon=="icon_hiking")
+			{
+				query4markers("select * from "+tableID+" where Title CONTAINS %'"+title+"'%{AND Tour_Asset='yes'}{ORDER BY Icon}{ORDER By Title}");				
+				document.getElementById("view").innerHTML=iframe;
+				//document.getElementById("showalltrail").style.display="block";
+				infobox.close();
+				document.getElementById("side_bar2").innerHTML=info;
+				document.getElementById("side_bar2").style.display="block";			
+
+			var LatLngList = array;
+			var bounds = new google.maps.LatLngBounds();
+			for (var i = 0, LtLgLen = LatLngList.length; i<LtLgLen; i++)
+				{
+				bounds.extend(LatLngList[i]);
+				}
+				map.fitBounds(bounds);
+
+				//document.getElementById("side_bar2").innerHTML=info;
+				//document.getElementById("side_bar2").style.display="block";			
+			}
+//icon for self-hosted panoramas//			
+			else if	(icon=="pan_icon")
+			{
+				document.getElementById("viewdiv").style.display="block";
+				document.getElementById("map_canvas").style.display="none";
+				document.getElementById("side_bar").style.display="none";
+				document.getElementById("view").innerHTML=embedivp;				
+			}
+
+//icon for 360 Cities hosted panorama//			
+			else if (icon=="360_icon")		
+			{
+				document.getElementById("viewdiv").style.display="block";
+				document.getElementById("map_canvas").style.display="none";
+				document.getElementById("side_bar").style.display="none";
+				document.getElementById("side_bar2").style.display="none";
+				document.getElementById("view").innerHTML=embed360cities;				
+			}
+			
+//icon for Google Photosphere hosted panorama//			
+			else if (icon==="psphere_icon"||icon==="icon_photosphere")		
+			{								
+				function psphere()
+					{
+					var PanoID=namepsphere;
+				   	var panoOptions = 
+						{
+				        visible:true,
+				        linksControl:false,
+				        panControl:true,
+				        addressControl:false,
+				      	 //addressControlOptions: {position: google.maps.ControlPosition.BOTTOM_CENTER},
+				        zoomControl:false,
+				      	 // zoomControlOptions:{style: google.maps.ZoomControlStyle.SMALL}       
+						 pov: {
+						    	heading: 0,
+							    pitch: 0
+							  }
+	       				}
+
+				  panorama = new google.maps.StreetViewPanorama(document.getElementById('view'),panoOptions);			
+						
+				  panorama.setPano(PanoID); 
+					//sets auto-rotation//
+				  window.setInterval(function() {
+					    var pov = panorama.getPov();
+					    pov.heading += 0.2;
+					    panorama.setPov(pov);
+						}, 10);										  
+					}
+				psphere();
+				document.getElementById("viewdiv").style.display="block";
+				document.getElementById("map_canvas").style.display="none";
+				document.getElementById("side_bar").style.display="none";
+				document.getElementById("side_bar2").style.display="none";
+				document.getElementById("view").style.height=displayheight;
+				document.getElementById("view").style.width=displaywidth;
+//				document.getElementById("view").innerHTML=embedpsphere3;				
+				}
+
+//icon for park locations with completed tours//			
+			else if (icon=="park_icon")
+			{
+				document.getElementById("side_bar").style.display="none";
+				document.getElementById("side_bar2").style.display="none";
+				document.getElementById("side_bar3").style.display="block";
+				document.getElementById("side_bar3").innerHTML=headerbox;
+
+			     if (title=="Fort Casey"){ftcasey()}
+			else if (title=="Fort Columbia"){ftcolumbia()}	
+			else if (title=="Fort Flagler"){ftflagler()}	
+			else if (title=="Fort Simcoe"){ftsimcoe()}							
+			else if (title=="Cape Disappointment"){caped()}	
+			else if (title=="Saltwater"){saltwater()}													
+			else if (title=="Saint Edward"){stedward()}	
+			else if (title=="Iron Horse"){ironhorsew()}									
+			else if (title=="Seaquest"){seaquest()}										
+			else if (title=="Deception Pass"){deceptionpass()}
+			else if (title=="Olallie"){olallie()}
+			else if (title=="Joseph Whidbey"){josephwhidbey()}
+			else if (title=="Palouse Falls"){palousefalls()}
+			else if (title=="Possession Point"){possessionpt()}
+			else if (title=="South Whidbey"){southwhidbey()}
+			else if (title=="Mystery Bay"){mysterybay()}
+			else if (title=="Hope Island (Skagit)"){hopeislandskagit()}
+			
+			}
+
+//icon for all other parks
+			else if (icon=="tree_icon")		
+			{	
+			function ParkKML(){				
+				   var  filename = kmlsrc+KML+".kml";
+		                infowindow = new google.maps.InfoWindow({});
+						geoXml = new geoXML3.parser({
+						map: map,
+				        infoWindow: infowindow,
+				        singleInfoWindow: true,
+						zoom: myGeoXml3Zoom,
+				        afterParse: useTheData
+				         });
+				        geoXml.parse(filename);
+			            }
+						
+				ParkKML();
+				document.getElementById("side_bar").style.display="none";
+				document.getElementById("side_bar2").style.display="none";
+				document.getElementById("side_bar3").style.display="block";
+				document.getElementById("side_bar3").innerHTML=headerbox;
+				document.getElementById("map_canvas").style.width="1000%";
+				document.getElementById("map_canvas").style.height="800px";		
+				document.getElementById("iconbar").style.display="block";
+				document.getElementById("iconbar").innerHTML='\
+					<img src="'+iconsrc+'camicon.png" alt="Click Icon for Image Preview">Image\
+					<img src="'+iconsrc+'pan_icon.png" alt="Click Icon for Panorama Preview">Panorama\
+					<img src="'+iconsrc+'m1x.png" alt="Click Icon to view more icons at location">Multiple Items Group\
+					<img src="'+iconsrc+'icon_hiking.png" alt="Click Icon to View Trail Information">Trail\
+					<img src="'+iconsrc+'video_icon.png" alt="Click Icon to View Slide or Video">Slideshow\
+					';
+				
+				function testmap(){
+					if (parkmapurl == 'N/A'){document.getElementById("parkmapembed").innerHTML= 'Map not available..'}
+					else if (parkmapurl == null){document.getElementById("parkmapembed").innerHTML='Map not available..'}
+					else {document.getElementById("parkmapembed").innerHTML='<iframe src="http://parks.state.wa.us/550/Mystery-Bay" height="1000px" width="700px scrolling="no" frameborder="0"></iframe>'}
+					//else {document.getElementById("parkmapembed").innerHTML='<iframe src="'+parkmapurl+'" height="1000px" width="700px scrolling="no" frameborder="0"></iframe>'}
+
+				}
+				testmap();
+					
+					
+				infobox.close();
+				//query4markers("select * from "+tableID+" WHERE Park_Name = '"+park+"'{AND Tour_Asset='yes'}");
+				//query4markers("select * from "+tableID+" WHERE Park_Name = '"+park+"'");		
+				marker.setVisible(false);
+				map.setCenter(point);
+				map.setZoom(zoom);	
+				
+			}
+//icon for park locations with tours in progress//
+			else if (icon=="working_icon")
+			{	
+				document.getElementById("side_bar").style.display="none";
+				document.getElementById("side_bar2").style.display="none";
+				document.getElementById("side_bar3").style.display="block";
+				document.getElementById("side_bar3").innerHTML=headerbox;
+				document.getElementById("map_canvas").style.width="100%";
+				document.getElementById("map_canvas").style.height="800px";		
+				document.getElementById("iconbar").style.display="block";
+				document.getElementById("iconbar").innerHTML='\
+					<img src="'+iconsrc+'camicon.png" alt="Click Icon for Image Preview">Image\
+					<img src="'+iconsrc+'pan_icon.png" alt="Click Icon for Panorama Preview">Panorama\
+					<img src="'+iconsrc+'m1x.png" alt="Click Icon to view more icons at location">Multiple Items Group\
+					<img src="'+iconsrc+'icon_hiking.png" alt="Click Icon to View Trail Information">Trail\
+					<img src="'+iconsrc+'video_icon.png" alt="Click Icon to View Slide or Video>Slideshow\
+					';
+				document.getElementById("parkmapembed").innerHTML='\
+				<iframe src="'+parkmapurl+'" height="1000px" width="700px scrolling="no" frameborder="0"></iframe></div>';
+
+				infobox.close();
+				query4markers("select * from "+tableID+" WHERE Park_Name = '"+park+"'");		
+				marker.setVisible(false);
+				map.setCenter(point);
+				map.setZoom(zoom);				
+			}
+			
+			else if (icon=="tour_icon")	
+			{//open tour page in parent iframe
+			window.open(preview,'_parent');
+			}	
+			
+			else if (icon=="icon_lodging")
+			{	
+				document.getElementById("side_bar2").style.display="block";
+				document.getElementById("side_bar2").innerHTML=button;
+				infobox.close();
+				infobox.setContent(label);
+				infobox.open(map, this);
+				map.panTo(marker.getPosition());
+			}
+			
+			else if (icon=="star_green")
+			{	
+				document.getElementById("side_bar2").style.display="block";
+				document.getElementById("side_bar2").innerHTML=button;
+				infobox.close();
+				infobox.setContent(label2);
+				infobox.open(map, this);
+				map.panTo(marker.getPosition());
+//				marker.setVisible(false);
+			}
+
+			else if (icon=="icon_battery")
+			{	   
+				map.setZoom(19);
+				map.setCenter(marker.getPosition());
+				document.getElementById("side_bar2").style.display="block";
+				document.getElementById("side_bar2").innerHTML=button;				
+				map.panTo(marker.getPosition());
+			}
+
+			else if (icon=="video_icon")
+			{
+				map.setZoom(14);
+			    map.setCenter(new google.maps.LatLng(48.093177,-122.706183));	
+				document.getElementById("viewdiv").style.display="block";
+				document.getElementById("map_canvas").style.display="none";
+				document.getElementById("side_bar").style.display="none";
+				document.getElementById("view").innerHTML=embedswf;
+				document.getElementById("closeframetrail").style.display="block";
+				document.getElementById("closeframe").style.display="none";
+			}
+			
+			else if (icon==="icon_camping"){}
+			else if (icon==="slide_icon")	
+			{
+				document.getElementById("viewdiv").style.display="block";
+				document.getElementById("map_canvas").style.display="none";
+				document.getElementById("side_bar").style.display="none";
+				document.getElementById("view").innerHTML=iframe;
+				document.getElementById("iframe").src=preview;
+			}
+			
+			else if (
+				icon==="icon_parking"||
+				icon==="icon_boatlaunch"||
+				icon==="icon_canoe"||
+				icon==="icon_shelter"||
+				icon==="camicon")	
+			{
+				document.getElementById("map_table").style.display="block";
+				document.getElementById("view").innerHTML=embedjpg;
+				document.getElementById("viewdiv").style.display="block";
+				document.getElementById("map_canvas").style.display="none";
+				document.getElementById("side_bar").style.display="none";
+				document.getElementById("side_bar2").style.display="none";
+								
+			}
+			
+			else if (icon==="icon_picasa")
+			{
+				document.getElementById("map_table").style.display="block";
+				document.getElementById("view").innerHTML=embedpicasa;
+				document.getElementById("viewdiv").style.display="block";
+				document.getElementById("map_canvas").style.display="none";
+				document.getElementById("side_bar").style.display="none";
+				document.getElementById("side_bar2").style.display="none";
+			}
+			else if (icon==="icon_panoramio")
+			{
+				document.getElementById("map_table").style.display="block";
+				document.getElementById("view").innerHTML=embedpanoramio;
+				document.getElementById("viewdiv").style.display="block";
+				document.getElementById("map_canvas").style.display="none";
+				document.getElementById("side_bar").style.display="none";
+				document.getElementById("side_bar2").style.display="none";
+			}
+				
+			else 
+			{
+				  infobox.close();
+				  infobox.close();
+				  infoWindow.close();
+			      infoWindow.setContent(info);
+			      infoWindow.open(map,marker);
+			 }; 
+	    });//end listener
+		
+  	}//end createMarker
+	
+ }//end for
+
+    side_html += '</tbody> \
+                </table><table id="resetmap"><tr><td><input type="button" onclick="initialize();choose_map();" value="Reset Map" style="display:block"></td></tr></table>';
+				
+    document.getElementById("side_bar").innerHTML = side_html;
+	
+	var markerCluster = new MarkerClusterer(map, markers,mcOptions);
+
+
+  }//end getData
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  function myclick(num) 
+  	{
+    google.maps.event.trigger(markers[num], "click");
+  	}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+
+	function closeframe()   
+	{ 
+	document.getElementById("viewdiv").style.display="none"; 
+	document.getElementById("map_canvas").style.display="block";
+	document.getElementById("map_canvas").style.width="100%";
+	document.getElementById("side_bar").style.display="block";
+	infoWindow.close();
+	query_park();
+	google.maps.event.trigger(map, 'resize'); 
+	};  
+
+	function closeframetrail()   
+	{ 
+	document.getElementById("viewdiv").style.display="none"; 
+	document.getElementById("map_canvas").style.display="block";
+	document.getElementById("map_canvas").style.width="100%";
+	document.getElementById("side_bar").style.display="block";
+	infoWindow.close();
+	query_trail();
+	google.maps.event.trigger(map, 'resize'); 
+	};
+
+	function close()
+	{
+	 document.getElementById("viewdiv").style.display="none";
+	 document.getElementById("map_canvas").style.display="block";
+	}
+	
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+//assorted query functions, some deprecated but left for example purposes
+
+ 	function query_park()
+		{
+		initialize();		
+//		query4markers("select *from "+tableID+" WHERE Icon IN ('park_icon','planned_icon','working_icon') ORDER BY Title");
+		query4markers("select *from "+tableID+" WHERE Icon IN ('park_icon','tree_icon') ORDER BY Title");		
+	//  query4markers("select *from "+tableID+" OFFSET 1000");
+	//  query4markers("select *from "+tableID+" OFFSET 500");
+	//  query4markers("select *from "+tableID+" LIMIT 500");
+		map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
+		map.setCenter(new google.maps.LatLng(47.321810,-121.199362));
+		map.setZoom(7);
+	//  mgr.refresh();
+		defaultpage();
+		
+		
+		document.getElementById("side_bar").style.display="none";	
+		document.getElementById("map_canvas").style.width="100%";
+		document.getElementById("intro").style.display="block";
+		document.getElementById("iconbar").style.display="none";		
+		document.getElementById("iconbar2").style.display="block";		
+		document.getElementById("iconbar2").innerHTML='\
+		<img src="'+iconsrc+'park_icon.png" alt="Park Tours">State Park Tours\
+		<img src="'+iconsrc+'tree_icon.png" alt="State Park">State Park\
+		<img src="'+iconsrc+'m1x.png">Multiple Items';
+		}
+ 	function query_park_tours()
+		{
+		initialize();		
+//		query4markers("select *from "+tableID+" WHERE Icon IN ('park_icon','planned_icon','working_icon') ORDER BY Title");
+		query4markers("select *from "+tableID+" WHERE Icon IN ('park_icon') ORDER BY Title");		
+	//  query4markers("select *from "+tableID+" OFFSET 1000");
+	//  query4markers("select *from "+tableID+" OFFSET 500");
+	//  query4markers("select *from "+tableID+" LIMIT 500");
+		map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
+		map.setCenter(new google.maps.LatLng(47.321810,-121.199362));
+		map.setZoom(7);
+	//  mgr.refresh();
+		defaultpage();
+		
+		
+		document.getElementById("side_bar").style.display="none";	
+		document.getElementById("map_canvas").style.width="100%";
+		document.getElementById("intro").style.display="block";
+		document.getElementById("iconbar2").style.display="block";		
+		document.getElementById("iconbar2").innerHTML='\
+		<img src="'+iconsrc+'park_icon.png" alt="Park Tours">State Park Tours\
+		<img src="'+iconsrc+'tree_icon.png" alt="State Park">State Park\
+		<img src="'+iconsrc+'m1x.png">Multiple Items';
+		}
+	function query_battery() 
+	 	{
+		initialize();	
+	    query4markers("select * from "+tableID+" where Keywords LIKE 'battery' ORDER BY Title");
+		google.maps.event.trigger(map,'resize');
+		map.setCenter(new google.maps.LatLng(47,-122));
+		map.setZoom(7);
+		defaultpage();		
+		document.getElementById("map_canvas").style.width="100%";	
+		document.getElementById("side_bar").style.display="block";	
+		document.getElementById("batteries").style.display="block";
+		document.getElementById("iconlist").innerHTML='<img src="'+iconsrc+'icon_battery.png">Battery Tour<br/><img src="'+iconsrc+'camicon.png">Image';
+		document.getElementById("iconlist").style.display="block";
+		hidetrails();
+		google.maps.event.trigger(map, 'resize');
+		}
+  
+	function query_vacation() 
+ 		{
+		query4markers("select * from "+tableID+" where Keywords CONTAINS %'vacation'% ORDER BY Title");
+		google.maps.event.trigger(map, 'resize'); 
+		map.setCenter(new google.maps.LatLng(47,-122));
+		map.setZoom(7);
+		defaultpage();
+	  	document.getElementById("map_canvas").style.width="100%";			 
+ 		document.getElementById("side_bar").style.display="block";	
+		document.getElementById("vacation").style.display="block";
+		document.getElementById("iconlist").innerHTML='<img src="'+iconsrc+'icon_lodging.png">Building Tour';
+		hidetrails();
+		google.maps.event.trigger(map, 'resize'); 
+		}
+  
+	function query_retreat() 
+ 		{
+		query4markers("select * from "+tableID+" where Keywords CONTAINS %'retreat'% ORDER BY Title");
+		google.maps.event.trigger(map, 'resize'); 
+		map.setCenter(new google.maps.LatLng(47,-122));
+		map.setZoom(7);
+		defaultpage();	
+		document.getElementById("map_canvas").style.width="100%";
+		document.getElementById("side_bar").style.display="block";
+		document.getElementById("retreat").style.display="block";
+	    document.getElementById("iconlist").innerHTML='<br/><img src="'+iconsrc+'icon_lodging.png">Building Tour';
+		hidetrails();
+		Flagler_Retreat_Hoskins.setMap(map);
+		Flagler_Retreat_Wilson.setMap(map);
+		Flagler_Retreat_Richmond.setMap(map);
+		google.maps.event.trigger(map, 'resize'); 
+	 	}
+
+	function query_trail() 
+	 	{ 
+	    query4markers("select * from "+tableID+" where Keywords LIKE 'trail' ORDER BY Title");
+		google.maps.event.trigger(map, 'resize'); 
+		map.setCenter(new google.maps.LatLng(47,-122));
+		map.setZoom(7);
+		defaultpage();
+		document.getElementById("map_canvas").style.width="100%";
+		document.getElementById("iconlist").innerHTML='<img src="'+iconsrc+'icon_hiking.png">Trail Info<br/><img src="'+iconsrc+'/video_icon.png">Slideshow';			  
+		document.getElementById("side_bar").style.display="block";
+		document.getElementById("trails").style.display="block";
+		//showtrails();
+		google.maps.event.trigger(map, 'resize'); 
+	  	} 
+
+	function query_all()
+	 	{
+		query4markers("select *from "+tableID+" OFFSET 1000");
+		query4markers("select *from "+tableID+" OFFSET 500");
+		query4markers("select *from "+tableID+" LIMIT 500");
+		pagedefault();
+		hidetrails();
+		google.maps.event.trigger(map, 'resize');     
+		document.getElementById("iconbar").innerHTML='\
+		<img src="'+iconsrc+'camicon.png">Image\
+		<img src="'+iconsrc+'pan_icon.png">Panorama\
+		<img src="'+iconsrc+'m1x.png">Multiple Items Group\
+		<img src="'+iconsrc+'icon_hiking.png">Trail\
+		<img src="'+iconsrc+'video_icon.png">Slideshow\
+		';
+		}
+	
+	function query_all_images()
+	{
+		query4markers("select *from "+tableID+"  WHERE Icon ='noicon'");
+		query4markers("select *from "+tableID+"  WHERE Icon ='camicon' OFFSET 1000");
+		query4markers("select *from "+tableID+"  WHERE Icon ='camicon' OFFSET 500");
+		query4markers("select *from "+tableID+"  WHERE Icon ='camicon' LIMIT 500");
+	}
+
+	function query_all_parks()
+	 	{
+		query4markers("select *from "+tableID+"  WHERE Icon ='' OFFSET 1000");
+		query4markers("select *from "+tableID+"  WHERE Icon ='' OFFSET 500");
+		query4markers("select *from "+tableID+"  WHERE Icon ='' LIMIT 500");
+		pagedefault();
+		hidetrails();
+		document.getElementById("map_canvas").style.width="100%";
+		google.maps.event.trigger(map, 'resize');     
+		document.getElementById("iconbar").innerHTML='\
+		<img src="'+iconsrc+'camicon.png" alt="Click Icon for Image Preview">Image\
+		<img src="'+iconsrc+'pan_icon.png" alt="Click Icon for Panorama Preview">Panorama\
+		<img src="'+iconsrc+'m1x.png" alt="Click Icon to view more icons at location">Multiple Items Group\
+		<img src="'+iconsrc+'icon_hiking.png" alt="Click Icon to View Trail Information">Trail\
+		<img src="'+iconsrc+'video_icon.png" alt="Click Icon to Viw Slide or Video>Slideshow\
+		';
+		}
+
+/////////////////////////////////////////////////////////////////////////////////////////	
+	function returntomap()
+		{
+		 document.getElementById("viewdiv").style.display="none";
+		 document.getElementById("park_map").style.display="none";
+		 document.getElementById("map_table").style.display="block";
+		 document.getElementById("map_canvas").style.display="block";
+		 document.getElementById("side_bar").style.display="none";
+		 document.getElementById("side_bar2").style.display="none";
+		 document.getElementById("parkbuttons").style.display="block"; 
+	 	 google.maps.event.trigger(map, 'resize');     
+	  	};
+	
+	function showmap() //if present, displays WSP offical map
+		{
+		document.getElementById("park_map").style.display="block";
+		document.getElementById("map_canvas").style.display="none";
+		document.getElementById("side_bar").style.display="none";
+		document.getElementById("side_bar2").style.display="none";
+		document.getElementById("parkbuttons").style.display="none";
+		}
+	
+	function choose_map()
+		{
+		if (park_tour_map =="") 
+		{
+			query_park()
+		}
+		else
+		{
+			tourpage();
+			park_tour_map();
+//			google.maps.event.trigger(map, 'resize');  
+//			MarkerClusterer.resetViewport();		 
+		};
+	}; 
+	
+	
+
+  </script>
+  </head>
+
+  <body onload="initialize();choose_map();">
+<table id="map_table" width="100%" height="800px" bordercolor="white" align="center">
+       <tr>
+          <td valign="top" align="center"><table width="100%">
+                    <!-- area above map and sidebars -->
+                    <tr>
+                         <td align="left" id="side_bar3" style="width:200px; display:none;"></td>
+                    </tr>
+                    <tr>
+                         <td align="center"><div id="buttons" style="display:none"></div></td>
+                    </tr>
+                    <tr>
+                         <td valign="top" align="left"><div id="intro" style="display:none"><br>
+                              </div>
+                              <div id="batteries" style="display:none"> Coastal Defenses</div>
+                              <div id="retreat" style="display:none"> Retreat <br>
+                              </div>
+                              <div id="vacation" style="display:none"> Vacation</div>
+                              <div id="trails" style="display:none"> Trails </div>
+                              <div id="pg" style="display:none">.</div></td>
+                    </tr>
+               </table>
+                 <table width="100%">
+                    <!-- area containing map and sidebars -->
+                    <tr>
+                           <td valign="top" align="center" colspan="2">
+                           <div id="iconbar" style="background-color:gray"></div>
+                           <div id="resetbutton" style="display:none"><input id="parkreset" type="button" onclick="query_park()" value="Reset Map" /></div>                           
+                           <div id="parkbuttons_top" style="display:block">
+                                     <table border="black" width="95%">
+                                        <tr>
+                                               <td>
+                                               
+                                               
+                                               <form name="myForm_top" style="width:250px">
+                                                       <SELECT NAME="parkselect" onChange="parkvalue = this.value">
+                                                            <option value="parktours">Show Park Tours</option> 
+                                                            <option value="allparks">Show All Parks</option>
+                                                  			<option value="alltourassets">Show All Tour Assets</option>
+                                                  			<option value="allassets">Show All Assets</option>                                                                                                             
+                                                            <optgroup label="Featured Parks" style="font-weight:bold"> 
+                                                            <option value="andersonlake">Anderson Lake</option>
+                                                    	    <option value="camabeach">Cama Beach</option>
+                                                            <option value="caped">Cape Disappointment</option>
+                                                            <option value="deceptionpass">Deception Pass</option>
+                                                            <option value="ftcasey">Fort Casey</option>
+                                                            <option value="ftcolumbia">Fort Columbia</option>
+                                                            <option value="ftebey">Fort Ebey</option>
+                                                            <option value="ftflagler">Fort Flagler</option>
+                                                            <option value="ftsimcoe">Fort Simcoe</option>
+                                                            <option value="ftworden">Fort Worden</option>
+                                                    	    <option value="griffith">Griffith-Priday</option>
+                                                            <option value="hopeislandmason">Hope Island (Mason)</option>
+                                                            <option value="hopeislandskagit">Hope Island (Skagit)</option>
+                                                    	    <option value="ikekinswa">Ike Kinswa</option>
+                                                            <option value="jacksoncourt">Jackson Courthouse</option> 
+                                                            <option value="jwhidbey">Joseph Whidbey</option>
+                                                    	    <option value="lksylvia">Lake Sylvia</option>
+                                                    	    <option value="millersylvania">Millersylvania</option>
+                                                            <option value="mtspokane">Mount Spokane</option>                                                            
+                                                            <option value="mysterybay">Mystery Bay</option>
+                                                            <option value="nolte">Nolte</option>                                                            
+                                                    	    <option value="oceancity">Ocean City</option>
+                                                            <option value="olallie">Olallie</option>
+                                                    	    <option value="pacific_beach">Pacific Beach</option>                                                        
+                                                            <option value="palousefalls">Palouse Falls</option>
+                                                            <option value="possessionpt">Possession Point</option>
+                                                    	    <option value="potlatch">Potlatch</option>
+                                                    	    <option value="rainbow_falls">Rainbow Falls</option>
+                                                    	    <option value="schafer">Schafer</option>
+                                                            <option value="stedward">Saint Edward</option>
+                                                            <option value="southwhidbey">South Whidbey</option>
+                                                            <option value="saltwater">Saltwater</option>
+                                                            <option value="seaquest">Seaquest</option>                                                           
+                                                    	    <option value="steptoe_battle">Steptoe Battlefield</option>
+                                                    	    <option value="steptoe_butte">Steptoe Butte</option>
+                                                    	    <option value="sunlakes">Sun Lakes-Dry Falls</option>                                                            
+                                                    	    <option value="tolmie">Tolmie</option>
+                                                    	    <option value="westport">Westport Light</option>
+                                                      </optgroup>
+                                                   </select>
+                                               </form>
+                                               <form>
+                                                 <input type="button" onclick="submitpark_top()" value="Select Map" />
+                                                 <input type="button" onclick="query_park()" value="Reset Map" />
+                                               </form>
+                                               </td>
+                                               <td>
+                                               <div id="iconbar2"></div>
+                                               </td>
+                                          </tr>
+                                   </table>
+                                </div></td>
+                      </tr>
+                    <tr>
+                           <td width="85%" valign="top"><div id="map_canvas" style="width: 100%; height: 500px;display:block;"></div>
+                              <div id="park_map" style="width:1000px; height:700px; display:none;">
+                                     <input id="closeframetrail" style="display:block" type="button" onClick="returntomap()" value="Return to Google Map">
+                                     <div id="parkmapembed"></div>
+                                </div>
+                              <div id="viewdiv" style="display:none">
+                                     <input id="closeframe" style="display:none" type="button" onClick="returntomap()" value="A">
+                                     <input id="closeframetrail" style="display:block" type="button" onClick="returntomap()" value="Return to Map">
+                                     <div id="view" display="block"></div>
+                                </div>
+                         <td width="15%" valign="top"><div id="parkbuttons_side" style="display:none">
+                                   <table border="black" width="100px">
+                                        <tr>
+                                             <td>Select:
+                                                  <form name="myForm_side" style="width:200px">
+                                                       <SELECT NAME="parkselect" onChange="parkvalue = this.value">
+                                                            <option value="parktours">Show Park Tours</option> 
+                                                            <option value="allparks">Show All Parks</option>
+                                                  			<option value="alltourassets">Show All Tour Assets</option>
+                                                  			<option value="allassets">Show All Assets</option>                                                  
+                                                           
+                                                            <optgroup label="Featured Parks" style="font-weight:bold"> 
+                                                            <option value="andersonlake">Anderson Lake</option>
+                                                    	    <option value="camabeach">Cama Beach</option>
+                                                            <option value="caped">Cape Disappointment</option>
+                                                            <option value="deceptionpass">Deception Pass</option>
+                                                            <option value="ftcasey">Fort Casey</option>
+                                                            <option value="ftcolumbia">Fort Columbia</option>
+                                                            <option value="ftebey">Fort Ebey</option>
+                                                            <option value="ftflagler">Fort Flagler</option>
+                                                            <option value="ftsimcoe">Fort Simcoe</option>
+                                                            <option value="ftworden">Fort Worden</option>
+                                                    	    <option value="griffith">Griffith-Priday</option>
+                                                            <option value="hopeislandmason">Hope Island (Mason)</option>
+                                                            <option value="hopeislandskagit">Hope Island (Skagit)</option>
+                                                            <option value="ikekinswa">Ike Kinswa</option>                                                            
+                                                            <option value="jacksoncourt">Jackson Courthouse</option>                                                            
+                                                            <option value="jwhidbey">Joseph Whidbey</option>
+                                                    	    <option value="lksylvia">Lake Sylvia</option>
+                                                    	    <option value="millersylvania">Millersylvania</option>
+                                                            <option value="mtspokane">Mount Spokane</option>
+                                                            <option value="mysterybay">Mystery Bay</option>
+                                                            <option value="nolte">Nolte</option>                                                            
+                                                    	    <option value="oceancity">Ocean City</option>
+                                                            <option value="olallie">Olallie</option>
+                                                    	    <option value="pacific_beach">Pacific Beach</option>                                                        
+                                                            <option value="palousefalls">Palouse Falls</option>
+                                                            <option value="possessionpt">Possession Point</option>
+                                                    	    <option value="potlatch">Potlatch</option>
+                                                    	    <option value="rainbow_falls">Rainbow Falls</option>
+                                                    	    <option value="schafer">Schafer</option>
+                                                            <option value="stedward">Saint Edward</option>
+                                                            <option value="southwhidbey">South Whidbey</option>
+                                                            <option value="saltwater">Saltwater</option>
+                                                            <option value="seaquest">Seaquest</option>                                                           
+                                                    	    <option value="steptoe_battle">Steptoe Battlefield</option>
+                                                    	    <option value="steptoe_butte">Steptoe Butte</option>
+                                                    	    <option value="sunlakes">Sun Lakes-Dry Falls</option>                                                            
+                                                    	    <option value="tolmie">Tolmie</option>
+                                                    	    <option value="westport">Westport Light</option>
+                                                      </optgroup>
+                                                       </select>
+                                                  </form>
+                                                  <form>
+                                                       <input type="button" onclick="submitpark_side()" value="Select" />
+                                                  </form>
+                                                  <hr/>
+                                                  <input type="button" onclick="query_park()" value="Reset Map" /></td>
+                                        </tr>
+                                   </table>
+                              </div>
+                              <div id="side_bar2" style="width:200px; display:none;"></div>
+                              <div id="tour_button" style="width:200px; display:none;"></div>
+                              <div id="side_bar" style="width: 200px; display:none;"></div>
+                              <br/>
+                              <div id="showalltrail" style="width:200px;display:none;">
+                                   <input type="button" onclick="query_trail()" value="C">
+                              </div>
+                              <div id="iconlist" style="display:block"></div></td>
+                      </tr>
+               </table>
+       </tr>
+  </table>
+<script>  
+function submitpark_top(){
+	var parkvalue = document.myForm_top.parkselect.value;
+	if (parkvalue=='allparks'){query_park();};
+	if (parkvalue =='ftworden'){initialize();tourpage();ftworden();};
+	if (parkvalue =='stedward'){initialize();tourpage();stedward();};
+	if (parkvalue =='ftcolumbia'){initialize();tourpage();ftcolumbia();};
+	if (parkvalue =='ftcasey'){initialize();tourpage();ftcasey();};	
+	if (parkvalue =='seaquest'){initialize();tourpage();seaquest();};
+	if (parkvalue =='ftflagler'){initialize();tourpage();ftflagler();};
+	if (parkvalue =='saltwater'){initialize();tourpage();saltwater();};
+	if (parkvalue =='ftsimcoe'){initialize();tourpage();ftsimcoe();};
+	if (parkvalue =='deceptionpass'){initialize();tourpage();deceptionpass();};
+	if (parkvalue =='southwhidbey'){initialize();tourpage();southwhidbey();};
+	if (parkvalue =='caped'){caped();};
+	if (parkvalue =='olallie'){olallie();};
+	if (parkvalue =='nolte'){nolte();};
+	if (parkvalue =='ftebey'){ftebey();};
+	if (parkvalue =='palousefalls'){palousefalls();};
+	if (parkvalue =='possessionpt'){possessionpt();};	
+	if (parkvalue =='jwhidbey'){jwhidbey();};
+	if (parkvalue =='mysterybay'){mysterybay();};
+	if (parkvalue =='hopeislandskagit'){hopeislandskagit();};
+	if (parkvalue =='hopeislandmason'){hopeislandmason();};
+	if (parkvalue =='sunlakes'){sunlakes();};
+	if (parkvalue =='camabeach'){camabeach();};
+	if (parkvalue =='griffith'){griffiths_priday();};
+	if (parkvalue =='ikekinswa'){ike_kinswa();};
+	if (parkvalue =='jacksoncourt'){jackson_courthouse();};
+	if (parkvalue =='lksylvia'){lake_sylvia();};
+	if (parkvalue =='oceancity'){ocean_city();};
+	if (parkvalue =='millersylvania'){millersylvania();};
+	if (parkvalue =='potlatch'){potlatch();};
+	if (parkvalue =='rainbow_falls'){rainbow_falls();};
+	if (parkvalue =='schafer'){schafer();};
+	if (parkvalue =='steptoe_battle'){steptoe_battlefield();};
+	if (parkvalue =='tolmie'){tolmie();};
+	if (parkvalue =='westport'){westport_light();};
+	if (parkvalue =='pacific_beach'){pacific_beach();};
+	if (parkvalue =='steptoe_butte'){steptoe_butte();};
+	if (parkvalue =='andersonlake'){andersonlake();};
+	if (parkvalue =='mtspokane'){mtspokane();};	
+	
+	
+	
+	
+		
+	if (parkvalue =='alltourassets'){alltourassets();};
+	if (parkvalue =='allassets'){allassets();};
+	if (parkvalue =='parktours'){query_park_tours();};		
+};
+function submitpark_side(){
+	var parkvalue = document.myForm_side.parkselect.value;
+	if (parkvalue=='allparks'){query_park();};
+	if (parkvalue =='ftworden'){initialize();tourpage();ftworden();};
+	if (parkvalue =='stedward'){initialize();tourpage();stedward();};
+	if (parkvalue =='ftcolumbia'){initialize();tourpage();ftcolumbia();};
+	if (parkvalue =='ftcasey'){initialize();tourpage();ftcasey();};	
+	if (parkvalue =='seaquest'){initialize();tourpage();seaquest();};
+	if (parkvalue =='ftflagler'){initialize();tourpage();ftflagler();};
+	if (parkvalue =='saltwater'){initialize();tourpage();saltwater();};
+	if (parkvalue =='ftsimcoe'){initialize();tourpage();ftsimcoe();};
+	if (parkvalue =='deceptionpass'){initialize();tourpage();deceptionpass();};
+	if (parkvalue =='southwhidbey'){initialize();tourpage();southwhidbey();};
+	if (parkvalue =='caped'){caped();};
+	if (parkvalue =='nolte'){nolte();};	
+	if (parkvalue =='ftebey'){ftebey();};
+	if (parkvalue =='olallie'){olallie();};
+	if (parkvalue =='palousefalls'){palousefalls();};	
+	if (parkvalue =='possessionpt'){possessionpt();};
+	if (parkvalue =='jwhidbey'){jwhidbey();};
+	if (parkvalue =='hopeislandskagit'){hopeislandskagit();};	
+	if (parkvalue =='hopeislandmason'){hopeislandmason();};
+	if (parkvalue =='sunlakes'){sunlakes();};
+	if (parkvalue =='camabeach'){camabeach();};
+	if (parkvalue =='griffith'){griffiths_priday();};
+	if (parkvalue =='ikekinswa'){ike_kinswa();};
+	if (parkvalue =='jacksoncourt'){jackson_courthouse();};
+	if (parkvalue =='lksylvia'){lake_sylvia();};
+	if (parkvalue =='oceancity'){ocean_city();};
+	if (parkvalue =='millersylvania'){millersylvania();};
+	if (parkvalue =='potlatch'){potlatch();};
+	if (parkvalue =='rainbow_falls'){rainbow_falls();};
+	if (parkvalue =='schafer'){schafer();};
+	if (parkvalue =='steptoe_battle'){steptoe_battlefield();};
+	if (parkvalue =='tolmie'){tolmie();};
+	if (parkvalue =='westport'){westport_light();};
+	if (parkvalue =='pacific_beach'){pacific_beach();};
+	if (parkvalue =='steptoe_butte'){steptoe_butte();};
+	if (parkvalue =='andersonlake'){andersonlake();};
+	if (parkvalue =='mtspokane'){mtspokane();};
+
+	if (parkvalue =='sunlakes'){sunlakes();};		
+	if (parkvalue =='mysterybay'){mysterybay();};	
+	if (parkvalue =='alltourassets'){alltourassets();};
+	if (parkvalue =='allassets'){allassets();};
+	if (parkvalue =='parktours'){query_park_tours();};		
+};
+
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<NetworkLink>
+<name><![CDATA[WAStateParksFusionMapsEngine]]></name>
+<Link>
+<href>
+https://www.google.com/fusiontables/exporttable?query=select+col15+from+1suULgdK6iebAzXMKmiw9NwKUJ6AjfZFehcNHyXU+where+col5+%3D+'Seashore%26Island'&amp;o=kmllink&amp;g=col15</href>
+</Link>
+</NetworkLink>
+</kml>
