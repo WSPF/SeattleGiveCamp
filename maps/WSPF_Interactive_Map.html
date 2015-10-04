@@ -6,20 +6,34 @@
 	<style type="text/css">
 	body{
 		font-family:arial;
-		background: #89ba2c;
+		background: white;
 		
+	}
+	.slide-out-div-left h3{
+		font-weight: bold;
+		color: white;
+	}
+	.slide-out-div-right h3{
+		font-weight: bold;
+		color: white;
+	}
+	.slide-out-div-left p{
+		color:white;
+	}
+	.slide-out-div-right p{
+		color:white;
 	}
 	.slide-out-div-left {
 		padding: 20px;
 		width: 250px;
-		background: #64788c;
+		background: #2c4959;
 		border: #42f5c 1px solid;
 		opacity:0.8;
 	}      
 	.slide-out-div-right {
 		padding: 20px;
 		width: 250px;
-		background: #64788c;
+		background: #2c4959;
 		border: #42f5c 1px solid;
 		opacity:0.8;
 	}
@@ -31,6 +45,7 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 	<script src="js/jquery.tabSlideOut.v1.3.js"></script>
+	<!--<script type="text/javascript" id="query" src="https://www.googleapis.com/fusiontables/v2/query?sql=SELECT+%22ParkID%22+FROM+%221CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt%22+WHERE+%22%27ACTIVITY%27+CONTAINS+%27HIKING%27%22&hdrs=true&typed=true&fields=rows&key=AIzaSyC6WBe4PjBW1KxJFwMBv6k2UL62G-1UobU"></script>-->
 	<script type="text/javascript">
 	var map;
 	var layer;
@@ -73,6 +88,7 @@
 		})
 	}
 
+	// Resets the map
 	function resetMap() {
 		layer.setOptions({
 			query: {
@@ -85,24 +101,86 @@
 	// For them filtering checkboxes
 	function handleClickEvent(ce) {
 		var names = [];
+		var y = [];
+		var x = [];
+
 		$('input:checked').each(function() {
 
 			names.push($(this).attr("name"));
 
 		});
-		console.log(names); 
+		console.log(names);
+
+		var query = "SELECT ParkID FROM " +
+            '1CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt' +
+            " WHERE 'ACTIVITY' CONTAINS 'HIKING'";
+        var encodedQuery = encodeURIComponent(query);
+
+        // Construct the URL
+        var url = ['https://www.googleapis.com/fusiontables/v1/query'];
+        url.push('?sql=' + encodedQuery);
+        url.push('&key=AIzaSyAm9yWCV7JPCTHCJut8whOjARd7pwROFDQ');
+        url.push('&callback=?');
+
+        // Send the JSONP request using jQuery
+        $.ajax({
+          url: url.join(''),
+          dataType: 'jsonp',
+          success: function (data) {
+          	//console.log(data);
+            var rows = data['rows'];
+            for (var i in rows) {
+              var store = rows[i][0];
+              console.log(rows[i]);
+            }
+          }
+        });
+
+
+		// var obj = document.getElementById("query");
+		// layer.get({query: {
+		// 		select: "ParkID",
+		// 		from: "1CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt", // Park Activities Table
+		// 		where: "'ACTIVITY' contains 'HIKING'"
+		// 	}});
+
+		// var json = JSON.parse(obj);
+		// for(var i in obj) {
+		// 	console.log(i);
+		// 	console.log(obj[i]);
+		//  }
+		// console.log(obj);
+		// var p = [];
+		// for(var i in names) {
+		// 	var p[] = {query: {
+		// 		select: "ParkID",
+		// 		from: "1CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt", // Park Activities Table
+		// 		where: "'ACTIVITY' contains '" + i + "'"
+		// 	}};
+		// }
+		// console.log(p);
+		// for(var j in p) {
+		// 	x[j]++;
+		// }
+		// int k = 0;
+		// for(var i in x) {
+		// 	if(x[i] == names.length) {
+		// 		y[k] = i;
+		// 		k++;
+		// 	} 
+		// }
 	}
 	// Park Slider Info js
 	$(function(){
 		$('.slide-out-div-left').tabSlideOut({
 					tabHandle: '.handle',                     //class of the element that will become your tab
-					pathToTabImage: 'images/info_tab.gif', //path to the image for the tab //Optionally can be set using css
+					pathToTabImage: 'images/info_tab.png', //path to the image for the tab //Optionally can be set using css
 					imageHeight: '122px',                     //height of tab image           //Optionally can be set using css
 					imageWidth: '40px',                       //width of tab image            //Optionally can be set using css
 					tabLocation: 'left',                      //side of screen where tab lives, top, right, bottom, or left
 					speed: 300,                               //speed of animation
 					action: 'click',                          //options: 'click' or 'hover', action to trigger animation
-					topPos: '200px',                          //position from the top/ use if tabLocation is left or right
+					topPos: '45px',                          //position from the top/ use if tabLocation is left or right
 					leftPos: '20px',                          //position from left/ use if tabLocation is bottom or top
 					fixedPosition: false                      //options: true makes it stick(fixed position) on scroll
 				});
@@ -111,13 +189,13 @@
 $(function(){
 		$('.slide-out-div-right').tabSlideOut({
 					tabHandle: '.handle2',                     //class of the element that will become your tab
-					pathToTabImage: 'images/filters_tab.gif', //path to the image for the tab //Optionally can be set using css
+					pathToTabImage: 'images/filter_tab.png', //path to the image for the tab //Optionally can be set using css
 					imageHeight: '122px',                     //height of tab image           //Optionally can be set using css
 					imageWidth: '40px',                       //width of tab image            //Optionally can be set using css
 					tabLocation: 'right',                      //side of screen where tab lives, top, right, bottom, or left
 					speed: 300,                               //speed of animation
 					action: 'click',                          //options: 'click' or 'hover', action to trigger animation
-					topPos: '200px',                          //position from the top/ use if tabLocation is left or right
+					topPos: '45px',                          //position from the top/ use if tabLocation is left or right
 					leftPos: '20px',                          //position from left/ use if tabLocation is bottom or top
 					fixedPosition: false                      //options: true makes it stick(fixed position) on scroll
 				});
@@ -133,17 +211,18 @@ google.maps.event.addDomListener(window, 'load', initialize);
 	<!-- Park Info slider -->
 	<div class="slide-out-div-left" style= "z-index:1">
 		<a class="handle" href="http://link-for-non-js-users.html">Content</a>
-		<h3>Contact me</h3>
-		<p>This can be a form to submit feedback, or contact info</p>
+		<h3>Name of Park</h3>
+		<p>Info of the Park</p>
 	</div>
 	
 	<!-- Park Filters slider -->
 	<div class="slide-out-div-right" style= "z-index:1">
 		<a class="handle2" href="http://link-for-non-js-users.html">Content</a>
-		<h3>Contact me</h3>
-		<p>This can be a form to submit feedback, or contact info</p>
+		<h3> Activites </h3>
 		<input type="checkbox"  name="HIKING" id="1"  class="box" onclick="handleClickEvent(this);">Hiking<br /><br />
+		<h3> Overnight </h3>
 		<input type="checkbox"  name="CCSKIING" id="2"  class="box" onclick="handleClickEvent(this);">CCSKIING<br /><br />
+		<h3> Distance </h3>
 		<input type="checkbox"  name="BIKING" id="3"  class="box" onclick="handleClickEvent(this);">BIKING<br /><br />
 		<input type="checkbox"  name="HORSE" id="4"  class="box" onclick="handleClickEvent(this);">Equestrian<br /><br />
 		<input type="checkbox"  name="RV" id="5"  class="box" onclick="handleClickEvent(this);">RV<br /><br />
