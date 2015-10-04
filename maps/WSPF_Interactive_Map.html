@@ -52,12 +52,22 @@
 		}
 		layer.setOptions({
 			query: {
-				select: "'Location'",
+				select: "Location",
 				from: "1Vo3S2tZm5EPjcdwfpHPGe_XDequChqd3bqZ8VOKw",
 				where: searchQuery
 			}
 		})
 	}
+
+	function resetMap() {
+		layer.setOptions({
+			query: {
+				select: "Location",
+				from: "1Vo3S2tZm5EPjcdwfpHPGe_XDequChqd3bqZ8VOKw",
+			}
+		})
+	}
+
 	// For them filtering checkboxes
 	function handleClickEvent(ce) {
 		var names = [];
@@ -104,6 +114,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
 			Park Search
 			<input type="text" id="search-string">
 			<input type="button" onclick="searchMap()" value="Search">
+			<input type="button" onclick="resetMap()" value="Reset">
 		</label> 
 	</div>
 
