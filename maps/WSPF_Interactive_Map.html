@@ -17,27 +17,25 @@
 	</style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
-	
 	<script src="js/jquery.tabSlideOut.v1.3.js"></script>
 	<script type="text/javascript">
-	var marker;
+	var map;
+	var layer;
 
-	function initialize1() 
-	{
-		var map = new google.maps.Map(document.getElementById('map-canvas'), {
+	// Create initial map from fusion table, display all parks
+	function initialize() {
+		map = new google.maps.Map(document.getElementById('map-canvas'), {
 			center: new google.maps.LatLng(47.303009, -120.640421),
 			zoom: 7,
 			minZoom:7,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		});
-
-		var layer = new google.maps.FusionTablesLayer({
+		layer = new google.maps.FusionTablesLayer({
 			map: map,
 			heatmap: { enabled: false },
 			query: {
-				select: "col15",
-				from: "1Vo3S2tZm5EPjcdwfpHPGe_XDequChqd3bqZ8VOKw",
-				where: ""
+				select: "Location",
+				from: "1Vo3S2tZm5EPjcdwfpHPGe_XDequChqd3bqZ8VOKw"
 			},
 			options: {
 				styleId: 2,
@@ -45,8 +43,22 @@
 			}
 		});		
 	}
-	</script>
-	<script>
+	// Text search by park name
+	function searchMap() {
+		var searchQuery;
+		var searchString = document.getElementById('search-string').value.replace(/'/g, "\\'");
+		if(searchString != '--Select--') {
+			searchQuery = "'Name' CONTAINS IGNORING CASE '" + searchString + "'"; //search query
+		}
+		layer.setOptions({
+			query: {
+				select: "'Location'",
+				from: "1Vo3S2tZm5EPjcdwfpHPGe_XDequChqd3bqZ8VOKw",
+				where: searchQuery
+			}
+		})
+	}
+	// For them filtering checkboxes
 	function handleClickEvent(ce) {
 		var names = [];
 		$('input:checked').each(function() {
@@ -56,9 +68,7 @@
 		});
 		console.log(names); 
 	}
-	google.maps.event.addDomListener(window, 'load', initialize1);
-	</script>
-	<script>
+	// Park Slider Info js
 	$(function(){
 		$('.slide-out-div').tabSlideOut({
 					tabHandle: '.handle',                     //class of the element that will become your tab
@@ -72,24 +82,35 @@
 					leftPos: '20px',                          //position from left/ use if tabLocation is bottom or top
 					fixedPosition: false                      //options: true makes it stick(fixed position) on scroll
 				});
-
 });
+
+google.maps.event.addDomListener(window, 'load', initialize);
 </script>
+
 </head>
 
 <body>
+
+	<!-- Park Info slider -->
 	<div class="slide-out-div" style= "z-index:1">
 		<a class="handle" href="http://link-for-non-js-users.html">Content</a>
 		<h3>Contact me</h3>
-		<p>
-			
-		</p>
 		<p>This can be a form to submit feedback, or contact info</p>
 	</div>
-	<div id="map-canvas">
+
+	<!-- Text Search -->
+	<div style="margin-top: 10px; margin-bottom: 10px;">
+		<label class="layer-wizard-search-label">
+			Park Search
+			<input type="text" id="search-string">
+			<input type="button" onclick="searchMap()" value="Search">
+		</label> 
 	</div>
 
+	<!-- Google Map -->
+	<div id="map-canvas"></div>
 
+	<!-- Filtering Options -->
 	<input type="checkbox"  name="HIKING" id="1"  class="box" onclick="handleClickEvent(this);">Hiking<br /><br />
 	<input type="checkbox"  name="CCSKIING" id="2"  class="box" onclick="handleClickEvent(this);">CCSKIING<br /><br />
 	<input type="checkbox"  name="BIKING" id="3"  class="box" onclick="handleClickEvent(this);">BIKING<br /><br />
