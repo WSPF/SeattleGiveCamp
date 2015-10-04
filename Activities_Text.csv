@@ -1,3 +1,4 @@
+ACTIVITY,ActivityText
 CAMPING,camping
 CCSKIING,cross-country skiing
 BEACH,beach exploration
@@ -16,7 +17,11 @@ SNOWMOBILE,snowmobiling
 SWIM,swimming
 VTOUR,virtual tour
 WSKIING,water-skiing
-
+YURTS,Yurts
+CABINS,Cabins
+VACHOUSE,Vacation House
+TENT,Tent
+RV,R.V.
 
 
 
