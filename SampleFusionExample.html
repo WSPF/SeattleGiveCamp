@@ -44,21 +44,24 @@
           dataType: 'jsonp',
           success: function (data) {
             var rows = data['rows'];
-			var colNames = data['columns'];
+			      var colNames = data.columns;
+            var ActivityField = colNames.indexOf("ACTIVITY");
+            var ActivityTextField = colNames.indexOf("ActivityText");
+            var ParkIdField = colNames.indexOf("ParkID");
             var ftData = document.getElementById('ft-data');
             for (var i in rows) {
-              var activityId = rows[i][0];
-              var activityName = rows[i][1];
-              var parkId = rows[i][2];
+              var activityId = rows[i][ActivityField];
+              var activityName = rows[i][ActivityTextField];
+              var parkId = rows[i][ParkIdField];
               var dataElement = document.createElement('div');
               var activityIdElement = document.createElement('p');
-              activityIdElement.innerHTML = colNames[0] + ': ' + activityId;
+              activityIdElement.innerHTML = 'Activity: ' + activityId;
               activityIdElement.className = 'activityId';
               var activityNameElement = document.createElement('p');
-              activityNameElement.innerHTML = colNames[1] + ': ' + activityName;
+              activityNameElement.innerHTML = 'ActivityText: ' + activityName;
               activityNameElement.className = 'details';
               var parkIDElement = document.createElement('p');
-              parkIDElement.innerHTML = colNames[2] + ': ' + parkId;
+              parkIDElement.innerHTML = 'ParkID: ' + parkId;
               parkIDElement.className = 'details';
 
               dataElement.appendChild(activityIdElement);
