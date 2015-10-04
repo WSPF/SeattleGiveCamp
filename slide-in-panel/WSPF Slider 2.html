@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href='http://fonts.googleapis.com/css?family=Droid+Sans:400,700|Droid+Serif' rel='stylesheet' type='text/css'>
+
+	<link rel="stylesheet" href="css/reset.css"> <!-- CSS reset -->
+	<link rel="stylesheet" href="css/style.css"> <!-- Resource style -->
+	<script src="js/modernizr.js"></script> <!-- Modernizr -->
+<!--links to accordian list-->
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <link rel="stylesheet" href="/resources/demos/style.css">
+	
+<title>Washington State Parks Foundation</title>
+	<style type="text/css">/*#map-canvas {width:615px;height:460px;}*/
+
+#map-canvas {
+	width: 100%;
+	height: 600px;
+}
+	</style>
+	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false">
+            
+        </script><script type="text/javascript">
+            var map;
+            var layerl;
+			
+			
+			
+			function initialize1() 
+			{
+                map = new google.maps.Map(document.getElementById('map-canvas'), {
+                        center: new google.maps.LatLng(47.303009, -120.640421),
+                        zoom: 7,
+						minZoom:7,
+                        mapTypeId: google.maps.MapTypeId.ROADMAP
+                    });
+					
+				layerl = new google.maps.FusionTablesLayer({
+                        query: {
+                            select: "'col1'",
+                            from: '10yjgDoBHPS6ihtw9OgVggXoG5n-YslBDWnjVQ81J',
+							//where: "'Activities' contains 'virtual tour'"
+                        },
+                        map: map,
+                        styleId: 2,
+                        templateId: 1
+                    });				
+					
+            }
+			
+			
+            
+			function changeMapl() //filter by virtual tours//
+			{
+				
+				               
+				var searchString1 = document.getElementById('search-string-l').value.replace(/'/g, "\\'");
+				
+				
+                layerl.setOptions({
+                        query: {
+                            select: "'col20'",
+                            from: '10yjgDoBHPS6ihtw9OgVggXoG5n-YslBDWnjVQ81J',
+                            where: "'VirtualTourURL' contains '" + searchString1 + "'"
+                        }
+                    });
+				
+				document.getElementById("tourlink").innerHTML='\
+			<a href="http://'+searchString1+'" target="_blank"><img alt="Virtual Tour" height="40" src="http://wspf.org/virtual-tours/maps/WaParksIconTour.png" width="38" /><br/>Go to Virtual Tour</a>',
+				
+				document.getElementById("tourlink").style.display="block"
+			
+			}
+			
+			
+			
+			
+			function changeMap2() //filter by activities//
+			{
+				
+                var searchString2 = document.getElementById('search-string-2').value.replace(/'/g, "\\'");
+                layerl.setOptions({
+                        query: {
+                            select: "'col7'",
+                            from: '10yjgDoBHPS6ihtw9OgVggXoG5n-YslBDWnjVQ81J',
+                            where: "'Activities' contains '" + searchString2 + "'"
+                        }
+                    });
+            document.getElementById("tourlink").style.display="none"
+			}
+			
+			function changeMap3() //filter by region//
+			{
+				
+                var searchString3 = document.getElementById('search-string-3').value.replace(/'/g, "\\'");
+				//map.setZoom(7)			
+                layerl.setOptions({
+                        query: {
+                            select: "'col1'",
+                            from: '10yjgDoBHPS6ihtw9OgVggXoG5n-YslBDWnjVQ81J',
+                            where: "'Region' contains '" + searchString3 + "'",																			}
+						
+                    });
+			document.getElementById("tourlink").style.display="none"			
+            }
+			  $(function() {
+    $( "#accordion" ).accordion();
+  });
+            google.maps.event.addDomListener(window, 'load', initialize1);
+        </script>
+</head>
+<body style="background-color:#cbd7ab">
+<table style="background-color:#cbd7ab" width="100%">
+	<tbody>
+		<tr>
+			<td align="center"><img alt="Day Use Park" height="40" src="http://wspf.org/maps/WaParksIconDay.png" width="38" /></td>
+			<td align="center"><img alt="Heritage Site" height="40" src="http://wspf.org/maps/WaParksIconHeritage.png" width="38" /></td>
+			<td align="center"><img alt="Overnight Camping" height="40" src="http://wspf.org/maps/WaParksIconOverNite.png" width="38" /></td>
+			<td align="center"><img alt="Picnicking" height="40" src="http://wspf.org/maps/WaParksIconPicnic.png" width="38" /></td>
+			<td align="center"><img alt="Trails" height="40" src="http://wspf.org/maps/WaParksIconTrail.png" width="38" /></td>
+		</tr>
+		<tr>
+			<td align="center">Day Use</td>
+			<td align="center">Heritage Site</td>
+			<td align="center">Camping</td>
+			<td align="center">Picnicking</td>
+			<td align="center">Trails</td>
+		</tr>
+	</tbody>
+</table>
+
+<div id="map-canvas"></div>
+
+<div style="margin-top: 10px;">
+<table style="background-color:#cbd7ab" width="100%">
+	<tbody>
+		<tr>
+			<td width="20%"><label>Search Virtual Tours</label></td>
+			<td rowspan="2" width="15%">
+			<div id="tourlink" style="display:none; font-size:14px; font-weight:bolder; vertical-align:middle; text-align:center;"></div>
+			</td>
+			<td width="33%"><label>Search Parks by Activity</label></td>
+			<td width="33%"><label>Search Parks by Region</label></td>
+		</tr>
+		<tr><!--TOURS-->
+			<td width="20%"><select id="search-string-l" onchange="changeMapl(this.value);"><option value="">--Select--</option><option value="wspf.org/virtual-tours/">All Tours</option> <optgroup label="___________" style="font-weight:bold"><option value="wspf.org/virtual-tours/Anderson_Lake.html">Anderson Lake</option><option value="wspf.org/virtual-tours/Beacon_Rock.html">Beacon Rock</option><option value="wspf.org/virtual-tours/Belfair.html">Belfair</option><option value="wspf.org/virtual-tours/Bottle_Beach.html">Bottle Beach</option><option value="wspf.org/virtual-tours/Cape_Disappointment.html">Cape Disappointment</option><option value="wspf.org/virtual-tours/Deception_Pass.html">Deception Pass</option><option value="wspf.org/virtual-tours/Flaming_Geyser.html">Flaming Geyser</option><option value="wspf.org/virtual-tours/Fort_Casey.html">Fort Casey</option><option value="wspf.org/virtual-tours/Fort_Columbia.html">Fort Columbia</option><option value="wspf.org/virtual-tours/Fort_Flagler.html">Fort Flagler</option><option value="wspf.org/virtual-tours/Fort_Simcoe.html">Fort Simcoe</option><option value="wspf.org/virtual-tours/Fort_Townsend.html">Fort Townsend</option><option value="wspf.org/virtual-tours/FtWorden-State_Park.html">Fort Worden</option><option value="wspf.org/virtual-tours/Ginkgo.html">Ginkgo Petrified Forest</option><option value="wspf.org/virtual-tours/Griffiths-Priday.html">Griffiths-Priday</option><option value="wspf.org/virtual-tours/HopeIslandMason.html">Hope Island (Mason)</option><option value="wspf.org/virtual-tours/HopeIslandSkagit.html">Hope Island (Skagit)</option><option value="wspf.org/virtual-tours/Ike_Kinswa.html">Ike Kinswa</option><option value="wspf.org/virtual-tours/Iron_Horse.html">Iron Horse</option><option value="wspf.org/virtual-tours/Joseph_Whidbey.html">Joseph Whidbey</option><option value="wspf.org/virtual-tours/Lake_Easton.html">Lake Easton</option><option value="wspf.org/virtual-tours/Lake_Sylvia.html">Lake Sylvia</option><option value="wspf.org/virtual-tours/Mount_Spokane.html">Mount Spokane</option><option value="wspf.org/virtual-tours/Mystery_Bay.html">Mystery Bay</option><option value="wspf.org/virtual-tours/Nolte.html">Nolte</option><option value="wspf.org/virtual-tours/Ocean_City.html">Ocean City</option><option value="wspf.org/virtual-tours/Olallie.html">Olallie</option> <!--        <option value="wspf.org/virtual-tours/Olmstead_Place.html">Olmstead Place</option>--><option value="wspf.org/virtual-tours/Pacific_Beach.html">Pacific Beach</option><option value="wspf.org/virtual-tours/Palouse_Falls.html">Palouse Falls</option><option value="wspf.org/virtual-tours/Potlatc.htmlh">Potlatch</option><option value="wspf.org/virtual-tours/Riverside.html">Riverside</option><option value="wspf.org/virtual-tours/Saint_Edward.html">Saint Edward</option><option value="wspf.org/virtual-tours/Saltwater.html">Saltwater</option><option value="wspf.org/virtual-tours/Seaquest.html">Seaquest</option><option value="wspf.org/virtual-tours/Shine_Tidelands.html">Shine Tidelands</option><option value="wspf.org/virtual-tours/Steptoe_Battlefield.html">Steptoe Battlefield</option><option value="wspf.org/virtual-tours/Steptoe_Butte.html">Steptoe Butte</option><option value="wspf.org/virtual-tours/SunLakes-DryFalls.html">Sun Lakes-Dry Falls</option><option value="wspf.org/virtual-tours/Tolmie.html">Tolmie</option> </optgroup></select></td>
+			<!--ACTIVITIES-->
+			<td width="33%"><select id="search-string-2" onchange="changeMap2(this.value);"><option value="">--Select--</option><option value=",">Reset Map</option><option value="ball fields">Ball Fields</option><option value="beach exploration">Beach Exploration</option><option value="bird watching">Bird Watching</option><option value="boating">Boating</option><option value="boating (non-motorized only)">Boating (Non-Motorized Only)</option><option value="camping">Camping</option><option value="cross-country skiing">Cross-Country Skiing</option><option value="equestrian">Equestrian</option><option value="fishing or shellfish">Fishing or Shellfish</option><option value="hiking">Hiking</option><option value="interpretative center/museum">Interpretative Center/Museum</option><option value="mountain biking">Mountain Biking</option><option value="ORV">ORV</option><option value="playground equipment">Playground Equipment</option><option value="scuba diving">Scuba Diving</option><option value="snowmobiling">Snowmobiling</option><option value="swimming">Swimming</option><option value="water-skiing">Water-Skiing</option> </select></td>
+			<!--REGION-->
+			<td width="33%"><select id="search-string-3" onchange="changeMap3(this.value);"><option value="">--Select--</option><option value="">Reset Map</option><option value="Columbia Gorge Region">Columbia Gorge</option><option value="North Central Region">North Central</option><option value="North Puget Sound Region">North Puget Sound</option><option value="North West Region">Northwest</option><option value="Northeast Region">Northeast</option><option value="Olympic Peninsula Region">Olympic Peninsula</option><option value="Pacific Coast Region">Pacific Coast</option><option value="San Juan Islands Region">San Juan Islands</option><option value="Seattle-Tacoma Region">Seattle-Tacoma</option><option value="South Central">South Central</option><option value="South East Region">Southeast</option><option value="South Puget Sound Region">South Puget Sound</option><option value="Southwest Region">Southwest</option> </select></td>
+		</tr>
+	</tbody>
+</table>
+</div>
+<!--code for sliding panel-->
+<main class="cd-main-content">
+		<a href="#0" class="cd-btn">Filters</a>
+		<!-- your content here -->
+	</main>
+
+	<div class="cd-panel from-right">
+		<header class="cd-panel-header">
+			<h1>Filters</h1>
+			<a href="#0" class="cd-panel-close">Close</a>
+		</header>
+		
+		<div class="cd-panel-container">
+			<div class="cd-panel-content">
+<!--code for collapsable lists starts here-->
+<div id="accordion">
+  <h3>Section 1</h3>
+  <div>
+    <p>
+    Mauris mauris ante, blandit et, ultrices a, suscipit eget, quam. Integer
+    ut neque. Vivamus nisi metus, molestie vel, gravida in, condimentum sit
+    amet, nunc. Nam a nibh. Donec suscipit eros. Nam mi. Proin viverra leo ut
+    odio. Curabitur malesuada. Vestibulum a velit eu ante scelerisque vulputate.
+    </p>
+  </div>
+  <h3>Section 2</h3>
+  <div>
+    <p>
+    Sed non urna. Donec et ante. Phasellus eu ligula. Vestibulum sit amet
+    purus. Vivamus hendrerit, dolor at aliquet laoreet, mauris turpis porttitor
+    velit, faucibus interdum tellus libero ac justo. Vivamus non quam. In
+    suscipit faucibus urna.
+    </p>
+  </div>
+  <h3>Section 3</h3>
+  <div>
+    <p>
+    Nam enim risus, molestie et, porta ac, aliquam ac, risus. Quisque lobortis.
+    Phasellus pellentesque purus in massa. Aenean in pede. Phasellus ac libero
+    ac tellus pellentesque semper. Sed ac felis. Sed commodo, magna quis
+    lacinia ornare, quam ante aliquam nisi, eu iaculis leo purus venenatis dui.
+    </p>
+    <ul>
+      <li>List item one</li>
+      <li>List item two</li>
+      <li>List item three</li>
+    </ul>
+  </div>
+  <h3>Section 4</h3>
+  <div>
+    <p>
+    Cras dictum. Pellentesque habitant morbi tristique senectus et netus
+    et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis in
+    faucibus orci luctus et ultrices posuere cubilia Curae; Aenean lacinia
+    mauris vel est.
+    </p>
+    <p>
+    Suspendisse eu nisl. Nullam ut libero. Integer dignissim consequat lectus.
+    Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
+    inceptos himenaeos.
+    </p>
+  </div>
+</div>
+		</div> <!-- cd-panel-container -->
+	</div> <!-- cd-panel -->
+<script src="js/jquery-2.1.1.js"></script>
+<script src="js/main.js"></script> <!-- Resource jQuery -->
+</body>
+</html>
