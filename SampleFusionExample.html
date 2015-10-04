@@ -44,6 +44,7 @@
           dataType: 'jsonp',
           success: function (data) {
             var rows = data['rows'];
+			var colNames = data['columns'];
             var ftData = document.getElementById('ft-data');
             for (var i in rows) {
               var activityId = rows[i][0];
@@ -51,13 +52,13 @@
               var parkId = rows[i][2];
               var dataElement = document.createElement('div');
               var activityIdElement = document.createElement('p');
-              activityIdElement.innerHTML = 'Activity Id: ' + activityId;
+              activityIdElement.innerHTML = colNames[0] + ': ' + activityId;
               activityIdElement.className = 'activityId';
               var activityNameElement = document.createElement('p');
-              activityNameElement.innerHTML = 'Activity name: ' + activityName;
+              activityNameElement.innerHTML = colNames[1] + ': ' + activityName;
               activityNameElement.className = 'details';
               var parkIDElement = document.createElement('p');
-              parkIDElement.innerHTML = 'Park Id: ' + parkId;
+              parkIDElement.innerHTML = colNames[2] + ': ' + parkId;
               parkIDElement.className = 'details';
 
               dataElement.appendChild(activityIdElement);
