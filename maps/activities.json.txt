@@ -1,0 +1,20 @@
+var activities={
+	CAMPING: "Camping",
+	CCSKIING: "Cross-Country Skiing",
+	BEACH: "Beach Exploration",
+	BIRD: "Birdwatching",
+	BALL: "Ball Fields",
+	BOATING: "Boating",
+	BOATING_NM: "Boating (Non-Motorized Only)",
+	HORSE: "Equestrian",
+	FISHING: "Fishing / Shellfish",
+	HIKING: "Hiking",
+	INTERP: "Interpretive Center / Museum",
+	BIKING: "Mountain Biking",
+	PLAYGROUND: "Playground Equipment",
+	SCUBA: "Scuba Diving",
+	SNOWMOBILE: "Snowmobiling",
+	SWIM: "Swimming",
+	VTOUR: "Virtual Tour",
+	WSKIING: "Water Skiing"
+	};

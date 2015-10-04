@@ -1,0 +1,7 @@
+var overnight={
+	YURTS: "Yurts",
+	CABINS: "Cabins",
+	VACHOUSE: "Vacation House",
+	TENT: "Tent",
+	RV: "RV"
+	};
