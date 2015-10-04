@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Fusion Tables Layer Example: Basic JSONP Request</title>
+    <style type="text/css">
+      #map-canvas {
+        height: 500px;
+        width: 600px;
+      }
+
+      .store-name {
+        font-weight: bold;
+        margin: 10px 0px 0px 0px;
+        padding: 0px;
+      }
+
+      .address, .delivers {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+
+    <script
+        src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js">
+    </script>
+    <script type="text/javascript">
+		var tblMergedActivities = '17LYROoWfS2pDw2KEG90yt_jpLdaAovFL_HAhx4Es';
+		var apiKey = 'AIzaSyC6WBe4PjBW1KxJFwMBv6k2UL62G-1UobU';
+
+      function initialize() {
+        var query = "SELECT * FROM " + tblMergedActivities;
+        var encodedQuery = encodeURIComponent(query);
+
+        // Construct the URL
+        var url = ['https://www.googleapis.com/fusiontables/v1/query'];
+        url.push('?sql=' + encodedQuery);
+        url.push('&key=' + apiKey);
+        url.push('&callback=?');
+
+        // Send the JSONP request using jQuery
+        $.ajax({
+          url: url.join(''),
+          dataType: 'jsonp',
+          success: function (data) {
+            var rows = data['rows'];
+            var ftData = document.getElementById('ft-data');
+            for (var i in rows) {
+              var store = rows[i][0];
+              var address = rows[i][1];
+              var delivers = rows[i][2];
+              var dataElement = document.createElement('div');
+              var storeElement = document.createElement('p');
+              storeElement.innerHTML = store;
+              storeElement.className = 'store-name';
+              var addressElement = document.createElement('p');
+              addressElement.innerHTML = address;
+              addressElement.className = 'address';
+              var deliversElement = document.createElement('p');
+              deliversElement.innerHTML = 'Delivers? ' + delivers;
+              deliversElement.className = 'delivers';
+
+              dataElement.appendChild(storeElement);
+              dataElement.appendChild(addressElement);
+              dataElement.appendChild(deliversElement);
+              ftData.appendChild(dataElement);
+            }
+          }
+        });
+      }
+    </script>
+  </head>
+  <body onload="initialize()">
+    <div id="ft-data"></div>
+  </body>
+</html>
