@@ -101,8 +101,13 @@
 				styleId: 2,
 				templateId: 2
 			}
-		});		
-	}
+		});	
+
+	// 	// For future use when clicking on markers
+	// 	google.maps.event.addListener(layer, 'click', function(e) {
+	// 		console.log("hello");
+ //        });
+	// }
 	// Text search by park name
 	function searchMap() {
 		var searchQuery;
@@ -129,6 +134,7 @@
 		})
 	}
 
+
 	// For them filtering checkboxes
 	function handleClickEvent(ce) {
 		var names = [];
@@ -140,57 +146,90 @@
 			names.push($(this).attr("name"));
 
 		});
-		console.log(names);
 
-		var query = "SELECT ParkID FROM " +
-            '1CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt' +
-            " WHERE 'ACTIVITY' CONTAINS 'HIKING'";
-        var encodedQuery = encodeURIComponent(query);
+		if (names.length == 0) {
+			resetMap();
+		}
+		console.log(names.length);
 
-        // Construct the URL
-        var url = ['https://www.googleapis.com/fusiontables/v1/query'];
-        url.push('?sql=' + encodedQuery);
-        url.push('&key=AIzaSyAm9yWCV7JPCTHCJut8whOjARd7pwROFDQ');
-        url.push('&callback=?');
+		var parks = [];
+		var parkCounter = [];
+		var activitiesCounter = names.length;
+
+		function combineParks() {
+			parks = [];
+	    	for(var i in parkCounter) {
+	    		if (parkCounter[i] == names.length) {
+	    			parks.push(i);
+	    		}
+	    		
+	    	}
+	    	console.log("matching parks: " + "'ParkID' IN ('" + parks.join("','") + "')");
+
+			var searchQuery;
+			searchQuery = "'ParkID' IN ('" + parks.join("','") + "')"; //search query
+			//searchQuery = "'ParkID' = 'SNOWMOBILE'"; //search query
+
+			layer.setOptions({
+				query: {
+					select: "Location",
+					from: fusionID,
+					where: searchQuery
+				}
+			})
+
+		}
+
+		for(var i in names) {
+			console.log("i = " + names[i]);
+			var query = "SELECT ParkID FROM " +
+			'1CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt' +
+			" WHERE 'ACTIVITY' = '"+ names[i] +"'";
+			var encodedQuery = encodeURIComponent(query);
+
+        	// Construct the URL
+        	var url = ['https://www.googleapis.com/fusiontables/v1/query'];
+        	url.push('?sql=' + encodedQuery);
+        	url.push('&key=AIzaSyAm9yWCV7JPCTHCJut8whOjARd7pwROFDQ');
+        	url.push('&callback=?');
 
         // Send the JSONP request using jQuery
         $.ajax({
-          url: url.join(''),
-          dataType: 'jsonp',
-          success: function (data) {
-          	//console.log(data);
-            var rows = data['rows'];
-            for (var i in rows) {
-              var store = rows[i][0];
-              console.log(rows[i]);
-            }
-          }
-        });
+        	url: url.join(''),
+        	dataType: 'jsonp',
+        	success: function (data) {
+          		//console.log(data);
+          		var rows = data['rows'];
+          		//console.log("data rows: " + data['rows'].toString());
+          		for (var i in rows) {
+            	  //var store = rows[i][0];
+            	  //console.log(rows[i]);
+            	  //console.log("rows[i]:" + rows[i]);
+            	  if(isNaN(parkCounter[rows[i]])) {
+            	  	parkCounter[rows[i]] = 0;
+            	  }
+            	  parks.push(rows[i]);
+            	  parkCounter[rows[i]]++;
+
+            	  //console.log(parks.toString());
+          		}
+      		},
+      		complete: function (data) {
+      			activitiesCounter--;
+      			if (activitiesCounter == 0) { // if all activities have been processed, combine the parks
+      				combineParks();
+
+      			}
+
+      		} 
+      		
+  		});
+    	}
 
 
-		// var obj = document.getElementById("query");
-		// layer.get({query: {
-		// 		select: "ParkID",
-		// 		from: "1CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt", // Park Activities Table
-		// 		where: "'ACTIVITY' contains 'HIKING'"
-		// 	}});
 
-		// var json = JSON.parse(obj);
-		// for(var i in obj) {
-		// 	console.log(i);
-		// 	console.log(obj[i]);
-		//  }
-		// console.log(obj);
-		// var p = [];
-		// for(var i in names) {
-		// 	var p[] = {query: {
-		// 		select: "ParkID",
-		// 		from: "1CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt", // Park Activities Table
-		// 		where: "'ACTIVITY' contains '" + i + "'"
-		// 	}};
-		// }
-		// console.log(p);
-		// for(var j in p) {
+
+		// for(var j in parks) {
 		// 	x[j]++;
 		// }
 		// int k = 0;
@@ -200,6 +239,9 @@
 		// 		k++;
 		// 	} 
 		// }
+
+
+
 	}
 	// Park Slider Info js
 	$(function(){
