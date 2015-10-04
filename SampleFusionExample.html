@@ -9,13 +9,13 @@
         width: 600px;
       }
 
-      .store-name {
+      .activityId {
         font-weight: bold;
         margin: 10px 0px 0px 0px;
         padding: 0px;
       }
 
-      .address, .delivers {
+      .details, .delivers {
         margin: 0px;
         padding: 0px;
       }
@@ -46,23 +46,23 @@
             var rows = data['rows'];
             var ftData = document.getElementById('ft-data');
             for (var i in rows) {
-              var store = rows[i][0];
-              var address = rows[i][1];
-              var delivers = rows[i][2];
+              var activityId = rows[i][0];
+              var activityName = rows[i][1];
+              var parkId = rows[i][2];
               var dataElement = document.createElement('div');
-              var storeElement = document.createElement('p');
-              storeElement.innerHTML = store;
-              storeElement.className = 'store-name';
-              var addressElement = document.createElement('p');
-              addressElement.innerHTML = address;
-              addressElement.className = 'address';
-              var deliversElement = document.createElement('p');
-              deliversElement.innerHTML = 'Delivers? ' + delivers;
-              deliversElement.className = 'delivers';
+              var activityIdElement = document.createElement('p');
+              activityIdElement.innerHTML = 'Activity Id: ' + activityId;
+              activityIdElement.className = 'activityId';
+              var activityNameElement = document.createElement('p');
+              activityNameElement.innerHTML = 'Activity name: ' + activityName;
+              activityNameElement.className = 'details';
+              var parkIDElement = document.createElement('p');
+              parkIDElement.innerHTML = 'Park Id: ' + parkId;
+              parkIDElement.className = 'details';
 
-              dataElement.appendChild(storeElement);
-              dataElement.appendChild(addressElement);
-              dataElement.appendChild(deliversElement);
+              dataElement.appendChild(activityIdElement);
+              dataElement.appendChild(activityNameElement);
+              dataElement.appendChild(parkIDElement);
               ftData.appendChild(dataElement);
             }
           }
