@@ -6,20 +6,34 @@
 	<style type="text/css">
 	body{
 		font-family:arial;
-		background: #89ba2c;
+		background: white;
 		
+	}
+	.slide-out-div-left h3{
+		font-weight: bold;
+		color: white;
+	}
+	.slide-out-div-right h3{
+		font-weight: bold;
+		color: white;
+	}
+	.slide-out-div-left p{
+		color:white;
+	}
+	.slide-out-div-right p{
+		color:white;
 	}
 	.slide-out-div-left {
 		padding: 20px;
 		width: 250px;
-		background: #64788c;
+		background: #2c4959;
 		border: #42f5c 1px solid;
 		opacity:0.8;
 	}      
 	.slide-out-div-right {
 		padding: 20px;
 		width: 250px;
-		background: #64788c;
+		background: #2c4959;
 		border: #42f5c 1px solid;
 		opacity:0.8;
 	}
@@ -160,13 +174,13 @@
 	$(function(){
 		$('.slide-out-div-left').tabSlideOut({
 					tabHandle: '.handle',                     //class of the element that will become your tab
-					pathToTabImage: 'images/info_tab.gif', //path to the image for the tab //Optionally can be set using css
+					pathToTabImage: 'images/info_tab.png', //path to the image for the tab //Optionally can be set using css
 					imageHeight: '122px',                     //height of tab image           //Optionally can be set using css
 					imageWidth: '40px',                       //width of tab image            //Optionally can be set using css
 					tabLocation: 'left',                      //side of screen where tab lives, top, right, bottom, or left
 					speed: 300,                               //speed of animation
 					action: 'click',                          //options: 'click' or 'hover', action to trigger animation
-					topPos: '200px',                          //position from the top/ use if tabLocation is left or right
+					topPos: '45px',                          //position from the top/ use if tabLocation is left or right
 					leftPos: '20px',                          //position from left/ use if tabLocation is bottom or top
 					fixedPosition: false                      //options: true makes it stick(fixed position) on scroll
 				});
@@ -175,13 +189,13 @@
 $(function(){
 		$('.slide-out-div-right').tabSlideOut({
 					tabHandle: '.handle2',                     //class of the element that will become your tab
-					pathToTabImage: 'images/filters_tab.gif', //path to the image for the tab //Optionally can be set using css
+					pathToTabImage: 'images/filter_tab.png', //path to the image for the tab //Optionally can be set using css
 					imageHeight: '122px',                     //height of tab image           //Optionally can be set using css
 					imageWidth: '40px',                       //width of tab image            //Optionally can be set using css
 					tabLocation: 'right',                      //side of screen where tab lives, top, right, bottom, or left
 					speed: 300,                               //speed of animation
 					action: 'click',                          //options: 'click' or 'hover', action to trigger animation
-					topPos: '200px',                          //position from the top/ use if tabLocation is left or right
+					topPos: '45px',                          //position from the top/ use if tabLocation is left or right
 					leftPos: '20px',                          //position from left/ use if tabLocation is bottom or top
 					fixedPosition: false                      //options: true makes it stick(fixed position) on scroll
 				});
@@ -197,17 +211,18 @@ google.maps.event.addDomListener(window, 'load', initialize);
 	<!-- Park Info slider -->
 	<div class="slide-out-div-left" style= "z-index:1">
 		<a class="handle" href="http://link-for-non-js-users.html">Content</a>
-		<h3>Contact me</h3>
-		<p>This can be a form to submit feedback, or contact info</p>
+		<h3>Name of Park</h3>
+		<p>Info of the Park</p>
 	</div>
 	
 	<!-- Park Filters slider -->
 	<div class="slide-out-div-right" style= "z-index:1">
 		<a class="handle2" href="http://link-for-non-js-users.html">Content</a>
-		<h3>Contact me</h3>
-		<p>This can be a form to submit feedback, or contact info</p>
+		<h3> Activites </h3>
 		<input type="checkbox"  name="HIKING" id="1"  class="box" onclick="handleClickEvent(this);">Hiking<br /><br />
+		<h3> Overnight </h3>
 		<input type="checkbox"  name="CCSKIING" id="2"  class="box" onclick="handleClickEvent(this);">CCSKIING<br /><br />
+		<h3> Distance </h3>
 		<input type="checkbox"  name="BIKING" id="3"  class="box" onclick="handleClickEvent(this);">BIKING<br /><br />
 		<input type="checkbox"  name="HORSE" id="4"  class="box" onclick="handleClickEvent(this);">Equestrian<br /><br />
 		<input type="checkbox"  name="RV" id="5"  class="box" onclick="handleClickEvent(this);">RV<br /><br />
