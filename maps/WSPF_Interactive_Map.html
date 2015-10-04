@@ -21,6 +21,7 @@
 	<script type="text/javascript">
 	var map;
 	var layer;
+	var fusionID = "1Vo3S2tZm5EPjcdwfpHPGe_XDequChqd3bqZ8VOKw";
 
 	// Create initial map from fusion table, display all parks
 	function initialize() {
@@ -35,7 +36,7 @@
 			heatmap: { enabled: false },
 			query: {
 				select: "Location",
-				from: "1Vo3S2tZm5EPjcdwfpHPGe_XDequChqd3bqZ8VOKw"
+				from: fusionID
 			},
 			options: {
 				styleId: 2,
@@ -53,7 +54,7 @@
 		layer.setOptions({
 			query: {
 				select: "Location",
-				from: "1Vo3S2tZm5EPjcdwfpHPGe_XDequChqd3bqZ8VOKw",
+				from: fusionID,
 				where: searchQuery
 			}
 		})
@@ -63,7 +64,7 @@
 		layer.setOptions({
 			query: {
 				select: "Location",
-				from: "1Vo3S2tZm5EPjcdwfpHPGe_XDequChqd3bqZ8VOKw",
+				from: fusionID,
 			}
 		})
 	}
