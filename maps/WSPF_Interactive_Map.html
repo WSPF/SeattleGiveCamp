@@ -5,11 +5,11 @@
 	<title>WSPF Interactive Map</title>
 	<style type="text/css">
 	.slide-out-div {
-			padding: 20px;
-			width: 250px;
-			background: #ccc;
-			border: #29216d 1px solid;
-		}      
+		padding: 20px;
+		width: 250px;
+		background: #ccc;
+		border: #29216d 1px solid;
+	}      
 	#map-canvas {
 		width: 100%;
 		height: 600px;
@@ -47,20 +47,20 @@
 	}
 	</script>
 	<script>
-function handleClickEvent(ce) {
-	var names = [];
-   $('input:checked').each(function() {
+	function handleClickEvent(ce) {
+		var names = [];
+		$('input:checked').each(function() {
 
-       names.push($(this).attr("name"));
+			names.push($(this).attr("name"));
 
- });
-   console.log(names); 
-}
+		});
+		console.log(names); 
+	}
 	google.maps.event.addDomListener(window, 'load', initialize1);
 	</script>
 	<script>
-			$(function(){
-				$('.slide-out-div').tabSlideOut({
+	$(function(){
+		$('.slide-out-div').tabSlideOut({
 					tabHandle: '.handle',                     //class of the element that will become your tab
 					pathToTabImage: 'images/info_tab.gif', //path to the image for the tab //Optionally can be set using css
 					imageHeight: '122px',                     //height of tab image           //Optionally can be set using css
@@ -73,28 +73,28 @@ function handleClickEvent(ce) {
 					fixedPosition: false                      //options: true makes it stick(fixed position) on scroll
 				});
 
-			});
-		</script>
+});
+</script>
 </head>
 
 <body>
-<div class="slide-out-div" style= "z-index:1">
+	<div class="slide-out-div" style= "z-index:1">
 		<a class="handle" href="http://link-for-non-js-users.html">Content</a>
 		<h3>Contact me</h3>
 		<p>
-		
+			
 		</p>
 		<p>This can be a form to submit feedback, or contact info</p>
-    </div>
-<div id="map-canvas">
-</div>
+	</div>
+	<div id="map-canvas">
+	</div>
 
 
-<input type="checkbox"  name="HIKING" id="1"  class="box" onclick="handleClickEvent(this);">Hiking<br /><br />
-<input type="checkbox"  name="CCSKIING" id="2"  class="box" onclick="handleClickEvent(this);">CCSKIING<br /><br />
-<input type="checkbox"  name="BIKING" id="3"  class="box" onclick="handleClickEvent(this);">BIKING<br /><br />
-<input type="checkbox"  name="HORSE" id="4"  class="box" onclick="handleClickEvent(this);">Equestrian<br /><br />
-<input type="checkbox"  name="RV" id="5"  class="box" onclick="handleClickEvent(this);">RV<br /><br />
+	<input type="checkbox"  name="HIKING" id="1"  class="box" onclick="handleClickEvent(this);">Hiking<br /><br />
+	<input type="checkbox"  name="CCSKIING" id="2"  class="box" onclick="handleClickEvent(this);">CCSKIING<br /><br />
+	<input type="checkbox"  name="BIKING" id="3"  class="box" onclick="handleClickEvent(this);">BIKING<br /><br />
+	<input type="checkbox"  name="HORSE" id="4"  class="box" onclick="handleClickEvent(this);">Equestrian<br /><br />
+	<input type="checkbox"  name="RV" id="5"  class="box" onclick="handleClickEvent(this);">RV<br /><br />
 
 </body>
 </html>
