@@ -6,7 +6,7 @@
 	<style type="text/css">
 	body{
 		font-family:arial;
-		background: white;
+		background: #cfdbaf;
 		
 	}
 	.slide-out-div-left h3{
@@ -29,6 +29,7 @@
 		background: #2c4959;
 		border: #42f5c 1px solid;
 		opacity:0.8;
+		height: 100%;
 	}      
 	.slide-out-div-right {
 		padding: 20px;
@@ -51,7 +52,12 @@
 	var layer;
 	var fusionID = "1Vo3S2tZm5EPjcdwfpHPGe_XDequChqd3bqZ8VOKw";
 
+</script type="text/javascript">
+<script type="text/javascript">
 	// Create initial map from fusion table, display all parks
+	function Kristin(){
+	
+	}
 	function initialize() {
 		map = new google.maps.Map(document.getElementById('map-canvas'), {
 			center: new google.maps.LatLng(47.303009, -120.640421),
@@ -180,7 +186,7 @@
 					tabLocation: 'left',                      //side of screen where tab lives, top, right, bottom, or left
 					speed: 300,                               //speed of animation
 					action: 'click',                          //options: 'click' or 'hover', action to trigger animation
-					topPos: '45px',                          //position from the top/ use if tabLocation is left or right
+					topPos: '85px',                          //position from the top/ use if tabLocation is left or right
 					leftPos: '20px',                          //position from left/ use if tabLocation is bottom or top
 					fixedPosition: false                      //options: true makes it stick(fixed position) on scroll
 				});
@@ -195,10 +201,74 @@ $(function(){
 					tabLocation: 'right',                      //side of screen where tab lives, top, right, bottom, or left
 					speed: 300,                               //speed of animation
 					action: 'click',                          //options: 'click' or 'hover', action to trigger animation
-					topPos: '45px',                          //position from the top/ use if tabLocation is left or right
+					topPos: '85px',                          //position from the top/ use if tabLocation is left or right
 					leftPos: '20px',                          //position from left/ use if tabLocation is bottom or top
 					fixedPosition: false                      //options: true makes it stick(fixed position) on scroll
 				});
+
+
+var foo =
+{
+ "kind": "fusiontables#sqlresponse",
+ "columns": [
+  "ParkID",
+  "Name",
+  "Icon",
+  "Region",
+  "Thumbnail",
+  "Text1",
+  "Text2",
+  "ParkUrl",
+  "ParkUrlText",
+  "MapUrl",
+  "MapUrlText",
+  "TourUrl",
+  "TourUrlText",
+  "Location"
+ ],
+ "rows": [
+  [
+   "Alta_Lake",
+   "Alta Lake",
+   "campground",
+   "North Central Region",
+   "https://sites.google.com/site/virtualrangerproject/home/files/AltaLake.jpg",
+   "A 181-acre camping park where the mountainous pine forests meet the desert. Alta Lake is about two miles long and a half mile wide. The park offers good trout fishing during summer months. Lake Chelan, with its many activities, is 30 minutes away.",
+   "The Alta Lake area was given to State Parks by the city of Pateros and was established \"Alta Lake State Park\" in 1951. The lake was named \"Alta\" in 1900 by Mr. Heinz, a jeweler from Wilbur, who was mining in the area. Finding the lake without a name, he called it after his daughter, Alta Heinz.",
+   "http://parks.state.wa.us//239/Alta-Lake",
+   "Park Website",
+   "http://parks.state.wa.us//DocumentCenter/Home/View/1837",
+   "Park Map",
+   "",
+   "",
+   {
+    "geometry": {
+     "type": "Point",
+     "coordinates": [
+      -119.938737,
+      48.027116,
+      0.0
+     ]
+    }
+   }
+  ]
+ ]
+}
+var lemon = "";
+
+lemon += foo.rows[0][1] + "<br>" + foo.rows[0][2] + "<br>" + "<br>" + foo.rows[0][3] + "<br>" + 
+"<img src='" + foo.rows[0][4] + "'>" + "<br>" +
+"<a href=&quot;" + foo.rows[0][7] + "&quot;>Park Website</a>" +
+
+"<br>" + 
+"<a href=&quot;" + foo.rows[0][9] + "&quot;>Park Map</a>" +
+"<br>" + foo.rows[0][5] + 
+
+"<br>" + foo.rows[0][6] + "<br>"
+
+; 
+
+$("#demo2").html(lemon);
 });
 
 google.maps.event.addDomListener(window, 'load', initialize);
@@ -210,9 +280,9 @@ google.maps.event.addDomListener(window, 'load', initialize);
 
 	<!-- Park Info slider -->
 	<div class="slide-out-div-left" style= "z-index:1">
-		<a class="handle" href="http://link-for-non-js-users.html">Content</a>
-		<h3>Name of Park</h3>
-		<p>Info of the Park</p>
+		<a class="handle" href="http://link-for-non-js-users.html" id="demo1"> Content</a>
+
+		<p id="demo2"></p>
 	</div>
 	
 	<!-- Park Filters slider -->
