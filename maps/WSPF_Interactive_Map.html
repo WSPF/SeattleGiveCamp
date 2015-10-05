@@ -16,6 +16,7 @@
 	.slide-out-div-right h3{
 		font-weight: bold;
 		color: white;
+		font-size: 12px;
 	}
 	.slide-out-div-left p{
 		color:white;
@@ -37,6 +38,7 @@
 		background: #2c4959;
 		border: #42f5c 1px solid;
 		opacity:0.8;
+		height: 100%;
 	}
 	#map-canvas {
 		width: 100%;
@@ -51,13 +53,37 @@
 	var map;
 	var layer;
 	var fusionID = "1Vo3S2tZm5EPjcdwfpHPGe_XDequChqd3bqZ8VOKw";
-
-</script type="text/javascript">
-<script type="text/javascript">
+	var activities={
+	CAMPING: "Camping",
+	CCSKIING: "Cross-Country Skiing",
+	BEACH: "Beach Exploration",
+	BIRD: "Birdwatching",
+	BALL: "Ball Fields",
+	BOATING: "Boating",
+	BOATING_NM: "Boating (Non-Motorized Only)",
+	HORSE: "Equestrian",
+	FISHING: "Fishing / Shellfish",
+	HIKING: "Hiking",
+	INTERP: "Interpretive Center / Museum",
+	BIKING: "Mountain Biking",
+	PLAYGROUND: "Playground Equipment",
+	SCUBA: "Scuba Diving",
+	SNOWMOBILE: "Snowmobiling",
+	SWIM: "Swimming",
+	VTOUR: "Virtual Tour",
+	WSKIING: "Water Skiing"
+	};
+	var overnight={
+	YURTS: "Yurts",
+	CABINS: "Cabins",
+	VACHOUSE: "Vacation House",
+	TENT: "Tent",
+	RV: "RV"
+	};
+	$(document).ready(function(){
+				setActivityFilters();
+			});
 	// Create initial map from fusion table, display all parks
-	function Kristin(){
-	
-	}
 	function initialize() {
 		map = new google.maps.Map(document.getElementById('map-canvas'), {
 			center: new google.maps.LatLng(47.303009, -120.640421),
@@ -76,7 +102,11 @@
 				styleId: 2,
 				templateId: 2
 			}
-		});		
+		});	
+	// 	// For future use when clicking on markers
+	// 	google.maps.event.addListener(layer, 'click', function(e) {
+	// 		console.log("hello");
+ //        });
 	}
 	// Text search by park name
 	function searchMap() {
@@ -104,6 +134,7 @@
 		})
 	}
 
+
 	// For them filtering checkboxes
 	function handleClickEvent(ce) {
 		var names = [];
@@ -115,57 +146,90 @@
 			names.push($(this).attr("name"));
 
 		});
-		console.log(names);
 
-		var query = "SELECT ParkID FROM " +
-            '1CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt' +
-            " WHERE 'ACTIVITY' CONTAINS 'HIKING'";
-        var encodedQuery = encodeURIComponent(query);
+		if (names.length == 0) {
+			resetMap();
+		}
+		console.log(names.length);
 
-        // Construct the URL
-        var url = ['https://www.googleapis.com/fusiontables/v1/query'];
-        url.push('?sql=' + encodedQuery);
-        url.push('&key=AIzaSyAm9yWCV7JPCTHCJut8whOjARd7pwROFDQ');
-        url.push('&callback=?');
+		var parks = [];
+		var parkCounter = [];
+		var activitiesCounter = names.length;
+
+		function combineParks() {
+			parks = [];
+	    	for(var i in parkCounter) {
+	    		if (parkCounter[i] == names.length) {
+	    			parks.push(i);
+	    		}
+	    		
+	    	}
+	    	console.log("matching parks: " + "'ParkID' IN ('" + parks.join("','") + "')");
+
+			var searchQuery;
+			searchQuery = "'ParkID' IN ('" + parks.join("','") + "')"; //search query
+			//searchQuery = "'ParkID' = 'SNOWMOBILE'"; //search query
+
+			layer.setOptions({
+				query: {
+					select: "Location",
+					from: fusionID,
+					where: searchQuery
+				}
+			})
+
+		}
+
+		for(var i in names) {
+			console.log("i = " + names[i]);
+			var query = "SELECT ParkID FROM " +
+			'1CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt' +
+			" WHERE 'ACTIVITY' = '"+ names[i] +"'";
+			var encodedQuery = encodeURIComponent(query);
+
+        	// Construct the URL
+        	var url = ['https://www.googleapis.com/fusiontables/v1/query'];
+        	url.push('?sql=' + encodedQuery);
+        	url.push('&key=AIzaSyAm9yWCV7JPCTHCJut8whOjARd7pwROFDQ');
+        	url.push('&callback=?');
 
         // Send the JSONP request using jQuery
         $.ajax({
-          url: url.join(''),
-          dataType: 'jsonp',
-          success: function (data) {
-          	//console.log(data);
-            var rows = data['rows'];
-            for (var i in rows) {
-              var store = rows[i][0];
-              console.log(rows[i]);
-            }
-          }
-        });
+        	url: url.join(''),
+        	dataType: 'jsonp',
+        	success: function (data) {
+          		//console.log(data);
+          		var rows = data['rows'];
+          		//console.log("data rows: " + data['rows'].toString());
+          		for (var i in rows) {
+            	  //var store = rows[i][0];
+            	  //console.log(rows[i]);
+            	  //console.log("rows[i]:" + rows[i]);
+            	  if(isNaN(parkCounter[rows[i]])) {
+            	  	parkCounter[rows[i]] = 0;
+            	  }
+            	  parks.push(rows[i]);
+            	  parkCounter[rows[i]]++;
+
+            	  //console.log(parks.toString());
+          		}
+      		},
+      		complete: function (data) {
+      			activitiesCounter--;
+      			if (activitiesCounter == 0) { // if all activities have been processed, combine the parks
+      				combineParks();
+
+      			}
+
+      		} 
+      		
+  		});
+    	}
 
 
-		// var obj = document.getElementById("query");
-		// layer.get({query: {
-		// 		select: "ParkID",
-		// 		from: "1CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt", // Park Activities Table
-		// 		where: "'ACTIVITY' contains 'HIKING'"
-		// 	}});
 
-		// var json = JSON.parse(obj);
-		// for(var i in obj) {
-		// 	console.log(i);
-		// 	console.log(obj[i]);
-		//  }
-		// console.log(obj);
-		// var p = [];
-		// for(var i in names) {
-		// 	var p[] = {query: {
-		// 		select: "ParkID",
-		// 		from: "1CXqQyoW1mdyn_COmKhhQoRb6B_hlAR3jpp2infgt", // Park Activities Table
-		// 		where: "'ACTIVITY' contains '" + i + "'"
-		// 	}};
-		// }
-		// console.log(p);
-		// for(var j in p) {
+
+		// for(var j in parks) {
 		// 	x[j]++;
 		// }
 		// int k = 0;
@@ -175,6 +239,9 @@
 		// 		k++;
 		// 	} 
 		// }
+
+
+
 	}
 	// Park Slider Info js
 	$(function(){
@@ -205,7 +272,6 @@ $(function(){
 					leftPos: '20px',                          //position from left/ use if tabLocation is bottom or top
 					fixedPosition: false                      //options: true makes it stick(fixed position) on scroll
 				});
-
 
 var foo =
 {
@@ -269,8 +335,20 @@ lemon += foo.rows[0][1] + "<br>" + foo.rows[0][2] + "<br>" + "<br>" + foo.rows[0
 ; 
 
 $("#demo2").html(lemon);
+		
 });
 
+function setActivityFilters(){
+var apples = "";
+var idFix = 1;
+for (var n in activities) {
+	apples += '<input type="checkbox"  name="'+ n + '" id="'+ idFix + '"  class="box" onclick="handleClickEvent(this);">' + activities[n] + '<br /><br />';
+	idFix= idFix + 1;
+}
+
+$(".slide-out-div-right h3:eq(0)").html(apples);
+};
+			
 google.maps.event.addDomListener(window, 'load', initialize);
 </script>
 
@@ -283,19 +361,19 @@ google.maps.event.addDomListener(window, 'load', initialize);
 		<a class="handle" href="http://link-for-non-js-users.html" id="demo1"> Content</a>
 
 		<p id="demo2"></p>
-	</div>
-	
+		</div>
+
 	<!-- Park Filters slider -->
 	<div class="slide-out-div-right" style= "z-index:1">
-		<a class="handle2" href="http://link-for-non-js-users.html">Content</a>
+		<a class="handle2" href="http://link-for-non-js-users.html" id= "activityf">Content</a>
 		<h3> Activites </h3>
-		<input type="checkbox"  name="HIKING" id="1"  class="box" onclick="handleClickEvent(this);">Hiking<br /><br />
+		<!--<input type="checkbox"  name="HIKING" id="1"  class="box" onclick="handleClickEvent(this);">Hiking<br /><br />
 		<h3> Overnight </h3>
 		<input type="checkbox"  name="CCSKIING" id="2"  class="box" onclick="handleClickEvent(this);">CCSKIING<br /><br />
 		<h3> Distance </h3>
 		<input type="checkbox"  name="BIKING" id="3"  class="box" onclick="handleClickEvent(this);">BIKING<br /><br />
 		<input type="checkbox"  name="HORSE" id="4"  class="box" onclick="handleClickEvent(this);">Equestrian<br /><br />
-		<input type="checkbox"  name="RV" id="5"  class="box" onclick="handleClickEvent(this);">RV<br /><br />
+		<input type="checkbox"  name="RV" id="5"  class="box" onclick="handleClickEvent(this);">RV<br /><br />-->
 	</div>
 
 	<!-- Text Search -->
@@ -311,12 +389,5 @@ google.maps.event.addDomListener(window, 'load', initialize);
 	<!-- Google Map -->
 	<div id="map-canvas"></div>
 
-	<!-- Filtering Options
-	<input type="checkbox"  name="HIKING" id="1"  class="box" onclick="handleClickEvent(this);">Hiking<br /><br />
-	<input type="checkbox"  name="CCSKIING" id="2"  class="box" onclick="handleClickEvent(this);">CCSKIING<br /><br />
-	<input type="checkbox"  name="BIKING" id="3"  class="box" onclick="handleClickEvent(this);">BIKING<br /><br />
-	<input type="checkbox"  name="HORSE" id="4"  class="box" onclick="handleClickEvent(this);">Equestrian<br /><br />
-	<input type="checkbox"  name="RV" id="5"  class="box" onclick="handleClickEvent(this);">RV<br /><br />
--->
 </body>
 </html>
